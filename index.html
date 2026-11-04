@@ -201,6 +201,23 @@ textarea:focus-visible {
   flex-wrap: wrap;
 }
 
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+}
+.sync-badge.badge-pending { color: var(--accent-text); border-color: var(--accent); background: var(--accent-light); }
+.sync-badge.badge-ok { color: var(--sheet); border-color: var(--sheet); }
+.sync-badge.badge-err { color: var(--danger); border-color: var(--danger); }
+
 .month-selector {
   display: flex;
   align-items: center;
@@ -1179,6 +1196,8 @@ details.sync-instructions[open] summary {
         <small>(แก้ไข)</small>
       </button>
 
+      <span class="sync-badge" id="autoSyncBadge" hidden title="ซิงก์อัตโนมัติเปิดอยู่ — ข้อมูลจะถูกส่งเข้าชีตให้เอง">⟳ ออโต้</span>
+
       <button class="btn btn-sheet btn-sm" id="headerSaveSheetBtn" title="ส่งข้อมูลเดือนนี้เข้า Google Sheet ทันที">
         <span id="headerSaveBtnText">☁️ บันทึกเข้าชีต</span>
       </button>
@@ -1363,11 +1382,12 @@ details.sync-instructions[open] summary {
           <div class="sync-card-header">
             <div class="sync-icon icon-gas">GAS</div>
             <div class="sync-card-body">
-              <h3>บันทึกอัตโนมัติเข้า Google Sheet (1 คลิก)</h3>
+              <h3>ซิงก์เข้า Google Sheet อัตโนมัติ (Auto Sync)</h3>
               <p>
-                กรอก URL เว็บแอป Google Apps Script ที่ผู้ดูแลกลุ่มงานตั้งไว้ครั้งเดียว
-                จากนั้นกดปุ่ม <strong>"บันทึกเข้าชีต"</strong> ที่มุมขวาบนได้ทุกเมื่อ —
-                ระบบจะสร้างแท็บให้อัตโนมัติถ้ายังไม่มี และเขียนข้อมูลลง G6:AK24 ตรงจุด
+                กรอก URL เว็บแอป Google Apps Script ที่ผู้ดูแลกลุ่มงานตั้งไว้ครั้งเดียว —
+                เมื่อเปิด <strong>"ซิงก์อัตโนมัติ"</strong> ระบบจะส่งข้อมูลเข้าชีตให้เองทุกครั้งที่แก้ไข
+                (Auto Save to Sheet) หรือกดปุ่ม <strong>"บันทึกเข้าชีต"</strong> ที่มุมขวาบนเพื่อส่งทันที —
+                ระบบสร้างแท็บให้อัตโนมัติถ้ายังไม่มี และเขียนข้อมูลลง G6:AK24 ตรงจุด
               </p>
             </div>
           </div>
@@ -1393,6 +1413,14 @@ details.sync-instructions[open] summary {
           <div id="gasStatusLine" style="margin-top:12px; font-size:13px; color:var(--fg-muted);">
             สถานะ: ยังไม่ได้ตรวจสอบการเชื่อมต่อ
           </div>
+
+          <label for="autoSyncToggle" style="margin-top:14px; display:flex; align-items:flex-start; gap:10px; cursor:pointer; padding:10px 12px; background:var(--bg-subtle); border:1px solid var(--border); border-radius:var(--radius-md);">
+            <input type="checkbox" id="autoSyncToggle" style="width:18px; height:18px; margin-top:2px; accent-color:var(--sheet); flex-shrink:0;">
+            <span style="font-size:13px; line-height:1.5;">
+              <strong>ซิงก์อัตโนมัติ (Auto Save to Sheet)</strong><br>
+              <span style="color:var(--fg-muted);">แก้ข้อมูลเสร็จประมาณ 3 วินาที ระบบส่งขึ้นชีตให้เอง — ไม่ต้องกดปุ่ม (ปิดได้ทุกเมื่อ)</span>
+            </span>
+          </label>
         </div>
 
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -1510,9 +1538,9 @@ details.sync-instructions[open] summary {
     </div>
   </div>
 
-  <p class="storage-note">
-    ข้อมูลบันทึกอัตโนมัติในเบราว์เซอร์ของเครื่องนี้ — ส่งออกไปยัง Google Sheet ของกลุ่มงาน
-    เฉพาะเมื่อกดปุ่ม "บันทึกเข้าชีต" เท่านั้น
+  <p class="storage-note" id="storageNote">
+    ข้อมูลบันทึกอัตโนมัติในเบราว์เซอร์ของเครื่องนี้ — ซิงก์เข้า Google Sheet ของกลุ่มงานอัตโนมัติ (Auto Save to Sheet)
+    เมื่อเปิดสวิตช์ "ซิงก์อัตโนมัติ" ในแท็บส่งออกข้อมูล
   </p>
 
 </div>
@@ -1806,8 +1834,10 @@ var state = {
   gas: {
     url: "",        // URL เว็บแอป Google Apps Script
     tabName: "",    // ชื่อแท็บในชีต (ว่าง = ใช้ชื่อผู้บันทึก)
-    secret: ""      // รหัสผ่านถ้าผู้ดูแลตั้ง OPTIONAL_SECRET ไว้
+    secret: "",     // รหัสผ่านถ้าผู้ดูแลตั้ง OPTIONAL_SECRET ไว้
+    autoSync: false // Auto Save to Sheet — ส่งขึ้นชีตเองหลังแก้ไขข้อมูล
   },
+  lastSync: null,   // { tab, month, year, pts, at } ข้อมูลที่ซิงก์สำเร็จล่าสุด
   store: {}   // store["2569_2"][actId][day] = qty
 };
 
@@ -1824,6 +1854,7 @@ function loadStorage() {
         if (parsed.currentMonth) state.currentMonth = parsed.currentMonth;
         if (parsed.currentYear) state.currentYear = parsed.currentYear;
         if (parsed.gas) state.gas = Object.assign(state.gas, parsed.gas);
+        if (parsed.lastSync) state.lastSync = parsed.lastSync;
       }
     }
     // อ่านการตั้งค่า GAS แยกอีกคีย์ (เพื่อความทนทาน)
@@ -1846,7 +1877,8 @@ function saveStorage() {
       doctor: state.doctor,
       currentMonth: state.currentMonth,
       currentYear: state.currentYear,
-      gas: state.gas
+      gas: state.gas,
+      lastSync: state.lastSync
     }));
     localStorage.setItem(GAS_CONFIG_KEY, JSON.stringify(state.gas));
   } catch (e) {
@@ -1879,6 +1911,7 @@ function setDayValue(actId, day, val) {
   }
   saveStorage();
   updateCalculations();
+  scheduleAutoSync();
 }
 
 function daysInCurrentMonth() {
@@ -2040,6 +2073,7 @@ function init() {
   setupSyncActions();
   setupGasActions();
   renderAll();
+  syncBadgeIdle();
 }
 
 function updateDoctorDisplay() {
@@ -2082,6 +2116,7 @@ function setupDoctorModal() {
     updateDoctorDisplay();
     closeModal();
     showToast("บันทึกข้อมูลผู้บันทึกเรียบร้อย");
+    scheduleAutoSync();   // ชื่อ/ตำแหน่งเปลี่ยน = ข้อมูลหัวตารางในชีตเปลี่ยนด้วย
   });
 }
 
@@ -2592,14 +2627,17 @@ function generateMatrixArray() {
   return out;
 }
 
-/* POST แบบ text/plain เพื่อเลี่ยง CORS preflight (Apps Script ไม่รับ OPTIONS) */
-function gasRequest(url, payload) {
-  return fetch(url, {
+/* POST แบบ text/plain เพื่อเลี่ยง CORS preflight (Apps Script ไม่รับ OPTIONS)
+   keepalive = true ใช้ตอนสลับแท็บ/ปิดหน้า เพื่อให้เบราว์เซอร์ส่งคำขอต่อจนจบ */
+function gasRequest(url, payload, keepalive) {
+  var init = {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(payload),
     redirect: "follow"
-  }).then(function (res) {
+  };
+  if (keepalive) init.keepalive = true;
+  return fetch(url, init).then(function (res) {
     if (!res.ok) throw new Error("HTTP " + res.status + " " + res.statusText);
     return res.text();
   }).then(function (text) {
@@ -2634,6 +2672,7 @@ function fillGasInputs() {
   document.getElementById("inputSheetTabName").value =
     state.gas.tabName || state.doctor.name || "";
   document.getElementById("inputGasSecret").value = state.gas.secret || "";
+  document.getElementById("autoSyncToggle").checked = !!state.gas.autoSync;
 }
 
 function testGasConnection() {
@@ -2677,9 +2716,99 @@ function testGasConnection() {
     .then(function () { btn.disabled = false; });
 }
 
-function saveToSheet(triggerBtn) {
+/* ---------- Auto Sync (Auto Save to Sheet) ----------
+   เมื่อเปิดสวิตช์ "ซิงก์อัตโนมัติ" ทุกการแก้ไขข้อมูลจะส่งขึ้นชีตเอง
+   หลังหยุดพิมพ์ ~3 วินาที — ไม่ต้องกดปุ่ม และมีป้ายสถานะบนหัวหน้า */
+
+var AUTO_SYNC_DELAY_MS = 3000;    // รอให้หยุดแก้ไขก่อนส่ง
+var AUTO_SYNC_RETRY_MS = 30000;   // ส่งไม่สำเร็จ ลองใหม่อีกครั้งหลัง 30 วินาที
+var AUTO_SYNC_MAX_RETRIES = 5;
+var autoSyncTimer = null;
+var autoSyncRetryTimer = null;
+var autoSyncRetries = 0;
+var pushInFlight = false;
+var pushQueued = false;
+var lastPushedSignature = "";
+
+/* ลายเซ็นของข้อมูลเดือนปัจจุบัน — ใช้เทียบว่ามีอะไรเปลี่ยนตั้งแต่ส่งครั้งล่าสุดหรือยัง */
+function matrixSignature() {
+  return state.currentMonth + "/" + state.currentYear + "|" +
+    effectiveTabName() + "|" + JSON.stringify(generateMatrixArray());
+}
+
+function setSyncBadge(cls, text, title) {
+  var el = document.getElementById("autoSyncBadge");
+  if (!el) return;
+  if (!state.gas.autoSync) { el.hidden = true; return; }
+  el.hidden = false;
+  el.className = "sync-badge" + (cls ? " " + cls : "");
+  el.textContent = text;
+  if (title !== undefined) el.title = title;
+}
+
+function syncBadgeIdle() {
+  if (!state.gas.autoSync) { setSyncBadge("", ""); return; }
+  if (state.lastSync) {
+    setSyncBadge("badge-ok", "✓ " + state.lastSync.localTime,
+      "ซิงก์อัตโนมัติเปิดอยู่ — ส่งขึ้นชีตล่าสุด " +
+      state.lastSync.localTime + " (" + fmtNum(state.lastSync.pts) + " แต้ม)");
+  } else {
+    setSyncBadge("", "⟳ ออโต้", "ซิงก์อัตโนมัติเปิดอยู่ — จะส่งขึ้นชีตเองเมื่อคุณแก้ไขข้อมูล");
+  }
+}
+
+function localTimeNow() {
+  return new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+}
+
+/* เรียกจากทุกที่ที่ข้อมูลเดือนเปลี่ยน (setDayValue / นำเข้าข้อมูลสำรอง) */
+function scheduleAutoSync() {
+  if (!state.gas.autoSync) return;
+  syncBadgeIdle();
+  setSyncBadge("badge-pending", "⟳ รอส่ง…", "กำลังรอส่งขึ้นชีต…");
+  clearTimeout(autoSyncTimer);
+  autoSyncTimer = setTimeout(function () {
+    autoSyncTimer = null;
+    pushToSheet({ auto: true });
+  }, AUTO_SYNC_DELAY_MS);
+}
+
+/* ปิดจอ/สลับแท็บเบราว์เซอร์ — ส่งทันทีถ้ายังมีข้อมูลค้างส่ง */
+document.addEventListener("visibilitychange", function () {
+  if (document.visibilityState === "hidden" && autoSyncTimer) {
+    clearTimeout(autoSyncTimer);
+    autoSyncTimer = null;
+    pushToSheet({ auto: true, keepalive: true });
+  }
+});
+
+function scheduleAutoSyncRetry(reason) {
+  if (!state.gas.autoSync) return;
+  if (autoSyncRetries >= AUTO_SYNC_MAX_RETRIES) {
+    setSyncBadge("badge-err", "⚠ ส่งไม่ได้",
+      "ส่งขึ้นชีตไม่สำเร็จ " + autoSyncRetries + " ครั้ง — ข้อมูลยังปลอดภัยในเครื่องนี้ " +
+      "กดปุ่ม \"บันทึกเข้าชีต\" เพื่อลองใหม่เมื่ออินเทอร์เน็ตกลับมา");
+    return;
+  }
+  setSyncBadge("badge-err", "⚠ ลองใหม่…" + (autoSyncRetries + 1),
+    "ส่งไม่สำเร็จ (" + reason + ") — จะลองใหม่อัตโนมัติใน 30 วินาที ข้อมูลปลอดภัยในเครื่อง");
+  clearTimeout(autoSyncRetryTimer);
+  autoSyncRetryTimer = setTimeout(function () {
+    autoSyncRetryTimer = null;
+    pushToSheet({ auto: true });
+  }, AUTO_SYNC_RETRY_MS);
+}
+
+/* แก้ค่า (ส่งเข้าชีต) — auto:true = โหมดเงียบ แจ้งผลผ่านป้ายสถานะ ไม่เด้ง toast */
+function pushToSheet(opts) {
+  var o = opts || {};
   readGasInputs();
-  if (!state.gas.url) {
+
+  if (!state.gas.url || !/^https:\/\/script\.google\.com\/macros\/s\/.+\/(exec|dev)$/.test(state.gas.url)) {
+    if (o.auto) {
+      setSyncBadge("badge-err", "⚠ ยังไม่ตั้งค่า", "ยังไม่ได้กรอก URL ของ Google Apps Script — ตั้งค่าในแท็บ ส่งออกข้อมูล");
+      return;
+    }
     setGasStatus("ยังไม่มี URL — เปิดแท็บ \"ส่งออกข้อมูล\" เพื่อตั้งค่าการเชื่อมต่อ", "gas-status-err");
     showToast("ยังไม่ได้ตั้งค่า Google Apps Script — ดูวิธีตั้งค่าในแท็บ ส่งออกข้อมูล");
     return;
@@ -2687,16 +2816,25 @@ function saveToSheet(triggerBtn) {
 
   var tabName = effectiveTabName();
   if (!tabName) {
+    if (o.auto) {
+      setSyncBadge("badge-err", "⚠ ไม่มีชื่อแท็บ", "กรุณากรอกชื่อแท็บในชีตที่แท็บ ส่งออกข้อมูล");
+      return;
+    }
     showToast("กรุณากรอกชื่อแท็บในชีตก่อนบันทึก");
     return;
   }
 
-  var btn = triggerBtn || document.getElementById("saveGasBtn");
+  if (pushInFlight) { pushQueued = true; return; }
+  if (o.auto && matrixSignature() === lastPushedSignature) { syncBadgeIdle(); return; }
+
+  pushInFlight = true;
+  var btn = o.auto ? null : (o.triggerBtn || document.getElementById("saveGasBtn"));
   var label = document.getElementById("headerSaveBtnText");
   var oldLabel = label ? label.textContent : "";
-  btn.disabled = true;
+  if (btn) btn.disabled = true;
   if (label) label.textContent = "⏳ กำลังบันทึก…";
-  setGasStatus("กำลังส่งข้อมูล " + ROW_COUNT_LABEL + " เข้าแท็บ \"" + tabName + "\"…");
+  setSyncBadge("badge-pending", "⟳ กำลังส่ง…", "กำลังส่งข้อมูลขึ้น Google Sheet…");
+  setGasStatus((o.auto ? "ซิงก์อัตโนมัติ: กำลังส่งข้อมูล " : "กำลังส่งข้อมูล ") + ROW_COUNT_LABEL + " เข้าแท็บ \"" + tabName + "\"…");
 
   var payload = {
     action: "save",
@@ -2708,27 +2846,59 @@ function saveToSheet(triggerBtn) {
     matrix: generateMatrixArray()
   };
 
-  gasRequest(state.gas.url, payload)
+  gasRequest(state.gas.url, payload, o.keepalive)
     .then(function (data) {
+      lastPushedSignature = matrixSignature();
+      autoSyncRetries = 0;
+      state.lastSync = {
+        tab: data.tabName || tabName,
+        month: state.currentMonth,
+        year: state.currentYear,
+        pts: Number(data.totalPts) || 0,
+        count: Number(data.totalCount) || 0,
+        at: data.timestamp || new Date().toISOString(),
+        localTime: localTimeNow(),
+        auto: !!o.auto
+      };
+      saveStorage();
       var pts = fmtNum(data.totalPts || 0);
       setGasStatus(
-        '<span class="gas-status-ok">บันทึกล่าสุดสำเร็จ</span> — แท็บ <strong>' +
-        escapeHtml(data.tabName) + "</strong> · แต้มรวมในชีต <strong>" + pts + "</strong> · " +
+        (o.auto ? '<span class="gas-status-ok">ซิงก์อัตโนมัติสำเร็จ</span>' : '<span class="gas-status-ok">บันทึกล่าสุดสำเร็จ</span>') +
+        " — แท็บ <strong>" + escapeHtml(data.tabName) + "</strong> · แต้มรวมในชีต <strong>" + pts + "</strong> · " +
         fmtNum(data.totalCount || 0, 0) + " ผลงาน" +
         (data.createdNewTab ? " · สร้างแท็บใหม่ให้อัตโนมัติ" : "") +
         '<br><small>เวลา: ' + escapeHtml(String(data.timestamp || "").replace("T", " ").substring(0, 19)) + " UTC</small>",
         ""
       );
-      showToast("บันทึกเข้าชีตแท็บ \"" + data.tabName + "\" สำเร็จ — " + pts + " แต้ม");
+      syncBadgeIdle();
+      if (!o.auto) showToast("บันทึกเข้าชีตแท็บ \"" + data.tabName + "\" สำเร็จ — " + pts + " แต้ม");
     })
     .catch(function (err) {
-      setGasStatus('<span class="gas-status-err">บันทึกไม่สำเร็จ</span> — ' + escapeHtml(err.message), "");
-      showToast("บันทึกไม่สำเร็จ: " + err.message);
+      if (o.auto) {
+        autoSyncRetries++;
+        scheduleAutoSyncRetry(err.message);
+        setGasStatus('<span class="gas-status-err">ซิงก์อัตโนมัติล้มเหลว</span> — ' + escapeHtml(err.message) +
+          "<br><small>ข้อมูลยังปลอดภัยในเครื่องนี้ ระบบจะลองส่งใหม่เอง</small>", "");
+      } else {
+        setGasStatus('<span class="gas-status-err">บันทึกไม่สำเร็จ</span> — ' + escapeHtml(err.message), "");
+        showToast("บันทึกไม่สำเร็จ: " + err.message);
+      }
     })
     .then(function () {
-      btn.disabled = false;
-      if (label) label.textContent = oldLabel;
+      pushInFlight = false;
+      if (btn) btn.disabled = false;
+      if (label && !pushQueued) label.textContent = oldLabel;
+      if (pushQueued) {
+        pushQueued = false;
+        setTimeout(function () { pushToSheet({ auto: o.auto, triggerBtn: o.triggerBtn }); }, 500);
+      }
     });
+}
+
+function saveToSheet(triggerBtn) {
+  clearTimeout(autoSyncTimer);
+  autoSyncTimer = null;
+  pushToSheet({ auto: false, triggerBtn: triggerBtn });
 }
 
 function escapeHtml(s) {
@@ -2752,6 +2922,28 @@ function setupGasActions() {
 
   ["inputGasUrl", "inputSheetTabName", "inputGasSecret"].forEach(function (id) {
     document.getElementById(id).addEventListener("change", readGasInputs);
+  });
+
+  document.getElementById("autoSyncToggle").addEventListener("change", function (e) {
+    state.gas.autoSync = !!e.target.checked;
+    saveStorage();
+    clearTimeout(autoSyncRetryTimer);
+    autoSyncRetryTimer = null;
+    autoSyncRetries = 0;
+    if (state.gas.autoSync) {
+      if (!state.gas.url) {
+        showToast("เปิดซิงก์อัตโนมัติแล้ว — แต่ยังไม่ได้กรอก URL ของ Google Apps Script");
+      } else {
+        showToast("เปิดซิงก์อัตโนมัติแล้ว — ข้อมูลจะส่งขึ้นชีตให้เองเมื่อแก้ไข");
+        scheduleAutoSync();
+      }
+      syncBadgeIdle();
+    } else {
+      clearTimeout(autoSyncTimer);
+      autoSyncTimer = null;
+      setSyncBadge("", "");
+      showToast("ปิดซิงก์อัตโนมัติแล้ว — ใช้ปุ่ม \"บันทึกเข้าชีต\" ส่งเองได้");
+    }
   });
 
   document.getElementById("copyGasCodeBtn").addEventListener("click", function () {
@@ -2806,6 +2998,7 @@ function setupSyncActions() {
       saveStorage();
       renderAll();
       showToast("นำเข้าข้อมูลสำรองเรียบร้อย");
+      scheduleAutoSync();
     } catch (err) {
       showToast("ข้อความสำรองไม่ถูกต้อง: " + err.message);
     }
