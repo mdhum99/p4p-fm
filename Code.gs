@@ -18,16 +18,16 @@
  *    POST (Content-Type: text/plain เพื่อเลี่ยง CORS preflight) →
  *    JSON {action, tabName, month, year, doctor, matrix, secret} →
  *    หาแท็บตามชื่อ ถ้าไม่มีให้สร้างใหม่จากต้นแบบ Sheet1 อัตโนมัติ →
- *    เขียนตัวเลข 19 แถว × 31 วัน ลงช่วง G6:AK24 → ตอบ JSON สรุปแต้มรวม
+ *    เขียนตัวเลข 20 แถว × 31 วัน ลงช่วง G6:AK25 → ตอบ JSON สรุปแต้มรวม
  * =====================================================================
  */
 
 // ====== ค่าตั้งต้น ======
 var SPREADSHEET_ID = "1GLvhWVQj174VaZXpHuOSZ3xH2N_efk69UKlrubg0WTk"; // ใช้เมื่อรันเป็น standalone script
-var TEMPLATE_TAB = "Sheet1";   // แท็บต้นแบบ (19 กิจกรรม พร้อมสูตร)
+var TEMPLATE_TAB = "Sheet1";   // แท็บต้นแบบ (20 กิจกรรม พร้อมสูตร)
 var OPTIONAL_SECRET = "";      // ถ้าตั้งค่าไม่ว่าง เว็บแอปต้องกรอกรหัสนี้จึงบันทึกได้ (แนะนำให้ตั้ง)
 
-var FIRST_ROW = 6, ROW_COUNT = 19;   // G6:AK24
+var FIRST_ROW = 6, ROW_COUNT = 20;   // G6:AK25
 var FIRST_COL = 7, COL_COUNT = 31;
 
 var THAI_MONTHS = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
@@ -94,7 +94,7 @@ function sanitizeTabName(raw) {
   return name.substring(0, 80);
 }
 
-/** บันทึก matrix 19×31 ลงแท็บของผู้ใช้ (สร้างแท็บให้อัตโนมัติถ้ายังไม่มี) */
+/** บันทึก matrix 20×31 ลงแท็บของผู้ใช้ (สร้างแท็บให้อัตโนมัติถ้ายังไม่มี) */
 function handleSaveP4P(data) {
   var ss = getSpreadsheet();
 
@@ -134,7 +134,7 @@ function handleSaveP4P(data) {
     targetSheet.getRange("A3").setValue(line3);
   }
 
-  // ตรวจรูปแบบ matrix: 19 แถว × 31 คอลัมน์ ค่าเป็นตัวเลข 0-9999 หรือช่องว่าง
+  // ตรวจรูปแบบ matrix: 20 แถว × 31 คอลัมน์ ค่าเป็นตัวเลข 0-9999 หรือช่องว่าง
   var matrix = data.matrix;
   if (!matrix || !Array.isArray(matrix) || matrix.length !== ROW_COUNT) {
     return createJsonResponse({
@@ -167,14 +167,15 @@ function handleSaveP4P(data) {
     values.push(row);
   }
 
-  // เขียนทับทั้งช่วง G6:AK24 ในคำสั่งเดียว
+  // เขียนทับทั้งช่วง G6:AK25 ในคำสั่งเดียว
   targetSheet.getRange(FIRST_ROW, FIRST_COL, ROW_COUNT, COL_COUNT).setValues(values);
 
   // รอสูตรคำนวณ แล้วอ่านผลรวมจากชีตจริง (D = อัตราแต้ม, E = จำนวนรวม, F5 = แต้มรวมทั้งหมด)
   SpreadsheetApp.flush();
   var totalPts = Number(targetSheet.getRange("F5").getValue()) || 0;
   var totalCount = 0;
-  var eValues = targetSheet.getRange("E6:E24").getValues();
+  var lastRow = FIRST_ROW + ROW_COUNT - 1;
+  var eValues = targetSheet.getRange("E" + FIRST_ROW + ":E" + lastRow).getValues();
   for (var k = 0; k < eValues.length; k++) totalCount += Number(eValues[k][0]) || 0;
 
   return createJsonResponse({

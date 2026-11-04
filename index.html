@@ -1593,7 +1593,7 @@ details.sync-instructions[open] summary {
     <div class="kpi-card">
       <div class="kpi-label">รวมแต้มสะสมทั้งเดือน</div>
       <div class="kpi-value num" id="totalPointsDisplay">0.00</div>
-      <div class="kpi-sub">คำนวณตามสูตร =SUM(F6:F24) ของชีต</div>
+      <div class="kpi-sub">คำนวณตามสูตร =SUM(F6:F25) ของชีต</div>
     </div>
 
     <div class="kpi-card k-accent">
@@ -1685,7 +1685,7 @@ details.sync-instructions[open] summary {
           </div>
 
           <div class="activity-filter-tags">
-            <button class="filter-tag active" data-filter="all">ทั้งหมด (19)</button>
+            <button class="filter-tag active" data-filter="all">ทั้งหมด (20)</button>
             <button class="filter-tag" data-filter="opd">OPD / ตรวจรักษา</button>
             <button class="filter-tag" data-filter="palliative">Palliative / ดูแลต่อเนื่อง</button>
             <button class="filter-tag" data-filter="community">ชุมชน / ออกตรวจ</button>
@@ -1799,7 +1799,7 @@ details.sync-instructions[open] summary {
                 กรอก URL เว็บแอป Google Apps Script ที่ผู้ดูแลกลุ่มงานตั้งไว้ครั้งเดียว —
                 เมื่อเปิด <strong>"ซิงก์อัตโนมัติ"</strong> ระบบจะส่งข้อมูลเข้าชีตให้เองทุกครั้งที่แก้ไข
                 (Auto Save to Sheet) หรือกดปุ่ม <strong>"บันทึกเข้าชีต"</strong> ที่มุมขวาบนเพื่อส่งทันที —
-                ระบบสร้างแท็บให้อัตโนมัติถ้ายังไม่มี และเขียนข้อมูลลง G6:AK24 ตรงจุด
+                ระบบสร้างแท็บให้อัตโนมัติถ้ายังไม่มี และเขียนข้อมูลลง G6:AK25 ตรงจุด
               </p>
             </div>
           </div>
@@ -1889,14 +1889,14 @@ details.sync-instructions[open] summary {
             <div class="sync-icon icon-sheet">G6</div>
             <div class="sync-card-body">
               <h3>วางใน Google Sheet ตรงจุดทันที</h3>
-              <p>คัดลอกเฉพาะตัวเลข 19 แถว × 31 วัน สำหรับวางทับช่วง G6:AK24</p>
+              <p>คัดลอกเฉพาะตัวเลข 20 แถว × 31 วัน สำหรับวางทับช่วง G6:AK25</p>
             </div>
           </div>
 
           <div class="sync-instructions" style="margin-top:14px;">
             <strong>ขั้นตอน:</strong>
             <ol>
-              <li>กดปุ่ม <strong>"คัดลอกข้อมูลวันที่ 1–31 (G6:AK24)"</strong> ด้านล่าง</li>
+              <li>กดปุ่ม <strong>"คัดลอกข้อมูลวันที่ 1–31 (G6:AK25)"</strong> ด้านล่าง</li>
               <li>เปิด Google Sheet "P4P Family Medicine 2569" ของเดือนนั้น</li>
               <li>คลิกที่เซลล์ <strong>G6</strong></li>
               <li>กด <strong>Ctrl+V</strong> (Mac: <strong>Cmd+V</strong>)</li>
@@ -1905,7 +1905,7 @@ details.sync-instructions[open] summary {
           </div>
         </div>
 
-        <button class="btn btn-sheet" id="copyG6Btn">คัดลอกข้อมูลวันที่ 1–31 (G6:AK24)</button>
+        <button class="btn btn-sheet" id="copyG6Btn">คัดลอกข้อมูลวันที่ 1–31 (G6:AK25)</button>
       </div>
 
       <div class="sync-card">
@@ -1924,7 +1924,7 @@ details.sync-instructions[open] summary {
         </div>
 
         <div style="display:flex; flex-direction:column; gap:8px;">
-          <button class="btn btn-primary" id="copyFullTableBtn">คัดลอกตารางทั้งหมด (A4:AK24)</button>
+          <button class="btn btn-primary" id="copyFullTableBtn">คัดลอกตารางทั้งหมด (A4:AK25)</button>
           <button class="btn btn-subtle" id="copyCsvBtn">คัดลอกเป็นข้อความ CSV</button>
         </div>
       </div>
@@ -2021,10 +2021,10 @@ details.sync-instructions[open] summary {
 
 // ====== ค่าตั้งต้น ======
 var SPREADSHEET_ID = "1GLvhWVQj174VaZXpHuOSZ3xH2N_efk69UKlrubg0WTk"; // ใช้เมื่อรันเป็น standalone script
-var TEMPLATE_TAB = "Sheet1";   // แท็บต้นแบบ (19 กิจกรรม พร้อมสูตร)
+var TEMPLATE_TAB = "Sheet1";   // แท็บต้นแบบ (20 กิจกรรม พร้อมสูตร)
 var OPTIONAL_SECRET = "";      // ถ้าตั้งค่าไม่ว่าง เว็บแอปต้องกรอกรหัสนี้จึงบันทึกได้ (แนะนำให้ตั้ง)
 
-var FIRST_ROW = 6, ROW_COUNT = 19;   // G6:AK24
+var FIRST_ROW = 6, ROW_COUNT = 20;   // G6:AK25
 var FIRST_COL = 7, COL_COUNT = 31;
 
 var THAI_MONTHS = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
@@ -2091,7 +2091,7 @@ function sanitizeTabName(raw) {
   return name.substring(0, 80);
 }
 
-/** บันทึก matrix 19×31 ลงแท็บของผู้ใช้ (สร้างแท็บให้อัตโนมัติถ้ายังไม่มี) */
+/** บันทึก matrix 20×31 ลงแท็บของผู้ใช้ (สร้างแท็บให้อัตโนมัติถ้ายังไม่มี) */
 function handleSaveP4P(data) {
   var ss = getSpreadsheet();
 
@@ -2131,7 +2131,7 @@ function handleSaveP4P(data) {
     targetSheet.getRange("A3").setValue(line3);
   }
 
-  // ตรวจรูปแบบ matrix: 19 แถว × 31 คอลัมน์ ค่าเป็นตัวเลข 0-9999 หรือช่องว่าง
+  // ตรวจรูปแบบ matrix: 20 แถว × 31 คอลัมน์ ค่าเป็นตัวเลข 0-9999 หรือช่องว่าง
   var matrix = data.matrix;
   if (!matrix || !Array.isArray(matrix) || matrix.length !== ROW_COUNT) {
     return createJsonResponse({
@@ -2164,14 +2164,15 @@ function handleSaveP4P(data) {
     values.push(row);
   }
 
-  // เขียนทับทั้งช่วง G6:AK24 ในคำสั่งเดียว
+  // เขียนทับทั้งช่วง G6:AK25 ในคำสั่งเดียว
   targetSheet.getRange(FIRST_ROW, FIRST_COL, ROW_COUNT, COL_COUNT).setValues(values);
 
   // รอสูตรคำนวณ แล้วอ่านผลรวมจากชีตจริง (E = จำนวนรวม, F5 = แต้มรวมทั้งหมด)
   SpreadsheetApp.flush();
   var totalPts = Number(targetSheet.getRange("F5").getValue()) || 0;
   var totalCount = 0;
-  var eValues = targetSheet.getRange("E6:E24").getValues();
+  var lastRow = FIRST_ROW + ROW_COUNT - 1;
+  var eValues = targetSheet.getRange("E" + FIRST_ROW + ":E" + lastRow).getValues();
   for (var k = 0; k < eValues.length; k++) totalCount += Number(eValues[k][0]) || 0;
 
   return createJsonResponse({
@@ -2193,7 +2194,7 @@ function handleSaveP4P(data) {
 /**
  * P4P Family Medicine — แบบบันทึกผลการปฏิบัติงาน
  * Schema mirrors Google Sheet "P4P Family Medicine 2569" (gid=1327780690):
- *   rows 6-24 = 19 activities, cols G..AK = days 1-31, E = รวมจำนวน, F = รวมแต้ม (D*E), F5 = SUM(F6:F24)
+ *   rows 6-25 = 20 activities, cols G..AK = days 1-31, E = รวมจำนวน, F = รวมแต้ม (D*E), F5 = SUM(F6:F25)
  */
 
 var THAI_MONTHS = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
@@ -2202,7 +2203,7 @@ var THAI_MONTHS = ["", "มกราคม", "กุมภาพันธ์", "
 var THAI_MONTHS_SHORT = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
   "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
-// 19 activities, exact names/units/rates from the sheet (typos "ชั้วโมง" corrected to "ชั่วโมง", "หัตฐการ" kept as in sheet)
+// 20 activities, exact names/units/rates from the sheet (typos "ชั้วโมง" corrected to "ชั่วโมง", "หัตฐการ" kept as in sheet)
 var ACTIVITIES = [
   { id: 1,  name: "ตรวจ OPD  Checkup",                          unit: "คน",      pts: 10.00, cat: "opd" },
   { id: 2,  name: "ออกตรวจ คลินิกหมอครอบครัวและรพ.สต.",         unit: "คน",      pts: 10.00, cat: "community" },
@@ -2220,9 +2221,10 @@ var ACTIVITIES = [
   { id: 14, name: "ประชุมโดยการสมัคร",                           unit: "ครั้ง",   pts: 7.85,  cat: "meeting" },
   { id: 15, name: "ลงชุมชนเยี่ยมบ้าน Home Health Care",          unit: "คน",      pts: 30.00, cat: "community" },
   { id: 16, name: "รับ Consult Palliative Care",                unit: "คน",      pts: 30.00, cat: "palliative" },
-  { id: 17, name: "Family Meeting /Counselling",                unit: "คน",      pts: 30.00, cat: "palliative" },
-  { id: 18, name: "DM Remission",                               unit: "คน",      pts: 10.00, cat: "opd" },
-  { id: 19, name: "หัตฐการ",                                    unit: "คน",      pts: 8.00,  cat: "opd" }
+  { id: 17, name: "รับ Consult จาก PCC/PCU ที่รับผิดชอบ",       unit: "คน",      pts: 15.00, cat: "community" },
+  { id: 18, name: "Family Meeting /Counselling",                unit: "คน",      pts: 30.00, cat: "palliative" },
+  { id: 19, name: "DM Remission",                               unit: "คน",      pts: 10.00, cat: "opd" },
+  { id: 20, name: "หัตฐการ",                                    unit: "คน",      pts: 8.00,  cat: "opd" }
 ];
 
 var CATEGORY_NAMES = {
@@ -2410,7 +2412,8 @@ var state = {
   gasAutoChosen: false, // ผู้ใช้เคยกดสวิตช์ซิงก์อัตโนมัติเองหรือยัง
   registered: false, // ลงทะเบียนชื่อบนเครื่องนี้แล้ว (บันทึกครั้งแรก = สร้างแท็บในชีตให้อัตโนมัติ)
   lastSync: null,   // { tab, month, year, pts, at } ข้อมูลที่ซิงก์สำเร็จล่าสุด
-  store: {}   // store["2569_2"][actId][day] = qty
+  store: {},  // store["2569_2"][actId][day] = qty
+  activitySchema: 1
 };
 
 /* ---------- storage ---------- */
@@ -2427,6 +2430,7 @@ function loadStorage() {
       var parsed = JSON.parse(raw);
       if (parsed && typeof parsed === "object") {
         if (parsed.store) state.store = parsed.store;
+        if (parsed.activitySchema) state.activitySchema = parsed.activitySchema;
         if (parsed.doctor) state.doctor = Object.assign(state.doctor, parsed.doctor);
         if (parsed.currentMonth) state.currentMonth = parsed.currentMonth;
         if (parsed.currentYear) state.currentYear = parsed.currentYear;
@@ -2462,6 +2466,7 @@ function loadStorage() {
     // URL ค่าเริ่มต้นของกลุ่มงาน — ใช้เมื่อเครื่องนี้ยังไม่เคยตั้ง URL เอง
     // (อยู่หลังการอ่านทั้งสองคีย์ และอยู่นอก if(raw) เพื่อให้เครื่องใหม่ที่ยังว่างได้ค่านี้ด้วย)
     if (!state.gas.url && DEFAULT_GAS_URL) state.gas.url = DEFAULT_GAS_URL.trim();
+    migrateActivityInsert17();
   } catch (e) {
     console.warn("อ่านข้อมูลที่บันทึกไว้ไม่ได้:", e);
   }
@@ -2477,13 +2482,37 @@ function saveStorage() {
       gas: state.gas,
       lastSync: state.lastSync,
       registered: state.registered === true,
-      gasAutoChosen: state.gasAutoChosen === true
+      gasAutoChosen: state.gasAutoChosen === true,
+      activitySchema: state.activitySchema
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     localStorage.setItem(GAS_CONFIG_KEY, JSON.stringify(state.gas));
   } catch (e) {
     console.warn("บันทึกข้อมูลไม่สำเร็จ:", e);
   }
+}
+
+/* แทรกกิจกรรมที่ 17 แล้วเลื่อนของเดิม 17–19 ไปเป็น 18–20
+   ทำครั้งเดียว เพื่อไม่ให้จำนวนที่เคยบันทึกของ Family Meeting / DM / หัตถการ ไปติดกิจกรรมใหม่ */
+function migrateActivityInsert17() {
+  if (state.activitySchema >= 2) return;
+  var periods = state.store || {};
+  Object.keys(periods).forEach(function (pk) {
+    var period = periods[pk];
+    if (!period || typeof period !== "object") return;
+    [19, 18, 17].forEach(function (oldId) {
+      var src = period[oldId] !== undefined ? period[oldId] : period[String(oldId)];
+      if (src === undefined) return;
+      var newId = String(oldId + 1);
+      if (period[newId] === undefined && period[oldId + 1] === undefined) {
+        period[newId] = src;
+      }
+      delete period[oldId];
+      delete period[String(oldId)];
+    });
+  });
+  state.activitySchema = 2;
+  saveStorage();
 }
 
 function periodKey(m, y) {
@@ -3387,7 +3416,7 @@ function renderTopActivities() {
 
 /* ---------- view 4: sync / export ---------- */
 
-// 19 rows x 31 day columns, blank when zero — paste at G6 of the sheet
+// 20 rows x 31 day columns, blank when zero — paste at G6 of the sheet
 function generateG6AK24Tsv() {
   var rows = [];
   ACTIVITIES.forEach(function (a) {
@@ -3401,7 +3430,7 @@ function generateG6AK24Tsv() {
   return rows.join("\n");
 }
 
-// Header row + total row + 19 activity rows, matching the sheet layout A4:AK24
+// Header row + total row + 20 activity rows, matching the sheet layout A4:AK25
 function generateFullTableTsv() {
   var rows = [];
   var header = ["ที่", "กิจกรรม", "หน่วยนับ", "แต้ม/หน่วย", "รวมจำนวน", "รวมแต้ม"];
@@ -3513,7 +3542,7 @@ function gasUrlConfigured() {
   return /^https:\/\/script\.google\.com\/macros\/s\/.+\/(exec|dev)$/.test((state.gas.url || "").trim());
 }
 
-/* 19 rows × 31 cols of numbers, "" when zero — same shape as the G6:AK24 paste */
+/* 20 rows × 31 cols of numbers, "" when zero — same shape as the G6:AK25 paste */
 function generateMatrixArray() {
   var out = [];
   ACTIVITIES.forEach(function (a) {
@@ -3841,7 +3870,7 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-var ROW_COUNT_LABEL = "19 กิจกรรม × 31 วัน";
+var ROW_COUNT_LABEL = "20 กิจกรรม × 31 วัน";
 
 function setupGasActions() {
   fillGasInputs();
@@ -3895,7 +3924,7 @@ function setupGasActions() {
 function setupSyncActions() {
   var copyG6 = function () {
     copyToClipboard(generateG6AK24Tsv(),
-      "คัดลอก 19×31 วันเรียบร้อย — วางที่เซลล์ G6 ของชีตได้เลย");
+      "คัดลอก 20×31 วันเรียบร้อย — วางที่เซลล์ G6 ของชีตได้เลย");
   };
   document.getElementById("copyG6Btn").addEventListener("click", copyG6);
   document.getElementById("matrixQuickCopyBtn").addEventListener("click", copyG6);
