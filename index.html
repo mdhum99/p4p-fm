@@ -38,6 +38,17 @@
   --sheet-hover: #0b5c30;
   --danger: #dc2626;
   --danger-light: #fee2e2;
+  --sun-bg: #fef2f2;
+  --sun-fg: #991b1b;
+  --sun-pill: #b91c1c;
+  --sat-bg: #faf5ff;
+  --sat-fg: #581c87;
+  --sat-pill: #6b21a8;
+  --holiday-bg: #fee2e2;
+  --holiday-fg: #b91c1c;
+  --holiday-border: #fca5a5;
+  --holiday-pill: #991b1b;
+  --holiday-dot: #dc2626;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --radius-sm: 6px;
@@ -70,6 +81,17 @@
     --sheet-hover: #22c55e;
     --danger: #ef4444;
     --danger-light: #450a0a;
+    --sun-bg: #2b1216;
+    --sun-fg: #fca5a5;
+    --sun-pill: #f87171;
+    --sat-bg: #20132b;
+    --sat-fg: #d8b4fe;
+    --sat-pill: #c084fc;
+    --holiday-bg: #3f1717;
+    --holiday-fg: #fca5a5;
+    --holiday-border: #7f1d1d;
+    --holiday-pill: #f87171;
+    --holiday-dot: #ef4444;
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
     color-scheme: dark;
@@ -97,6 +119,17 @@
   --sheet-hover: #22c55e;
   --danger: #ef4444;
   --danger-light: #450a0a;
+  --sun-bg: #2b1216;
+  --sun-fg: #fca5a5;
+  --sun-pill: #f87171;
+  --sat-bg: #20132b;
+  --sat-fg: #d8b4fe;
+  --sat-pill: #c084fc;
+  --holiday-bg: #3f1717;
+  --holiday-fg: #fca5a5;
+  --holiday-border: #7f1d1d;
+  --holiday-pill: #f87171;
+  --holiday-dot: #ef4444;
   color-scheme: dark;
 }
 
@@ -410,6 +443,29 @@ textarea:focus-visible {
   background: var(--border);
 }
 
+.dow-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-subtle);
+}
+
+.dow-cell {
+  padding: 2px 0;
+}
+
+.dow-cell.dow-sun {
+  color: var(--sun-fg);
+}
+
+.dow-cell.dow-sat {
+  color: var(--sat-fg);
+}
+
 .days-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -427,20 +483,60 @@ textarea:focus-visible {
   border: 1px solid transparent;
   cursor: pointer;
   position: relative;
-  transition: border-color 0.12s;
+  transition: border-color 0.12s, background-color 0.12s;
   padding: 2px;
   color: var(--fg);
   font-family: var(--font-main);
+}
+
+.day-cell.day-cell-pad {
+  background: transparent;
+  border-color: transparent;
+  cursor: default;
+  pointer-events: none;
 }
 
 .day-cell:hover {
   border-color: var(--primary);
 }
 
-.day-cell.selected {
-  background: var(--primary);
-  color: #ffffff;
+.day-cell.is-sun {
+  background: var(--sun-bg);
+  color: var(--sun-fg);
+}
+
+.day-cell.is-sat {
+  background: var(--sat-bg);
+  color: var(--sat-fg);
+}
+
+.day-cell.is-holiday {
+  background: var(--holiday-bg);
+  color: var(--holiday-fg);
   font-weight: 700;
+  border-color: var(--holiday-border);
+}
+
+.day-cell.is-holiday::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--holiday-dot);
+}
+
+.day-cell.selected {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  border-color: var(--primary) !important;
+}
+
+.day-cell.selected::before {
+  background: #ffffff !important; /* holiday dot turns white when selected */
 }
 
 .day-cell.has-data::after {
@@ -470,8 +566,71 @@ textarea:focus-visible {
   margin-top: 2px;
 }
 
+.day-cell.is-sun .day-score-pill { color: var(--sun-pill); }
+.day-cell.is-sat .day-score-pill { color: var(--sat-pill); }
+.day-cell.is-holiday .day-score-pill { color: var(--holiday-pill); font-weight: 700; }
+
 .day-cell.selected .day-score-pill {
-  color: var(--primary-light);
+  color: var(--primary-light) !important;
+}
+
+.holiday-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--holiday-bg);
+  color: var(--holiday-fg);
+  border: 1px solid var(--holiday-border);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.month-holidays-box {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.month-holidays-title {
+  font-weight: 700;
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.month-holidays-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.month-holidays-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1.35;
+  color: var(--fg-muted);
+}
+
+.month-holidays-list li strong {
+  color: var(--holiday-fg);
+  white-space: nowrap;
+}
+
+.month-holidays-empty {
+  color: var(--fg-subtle);
+  font-style: italic;
 }
 
 .day-summary-box {
@@ -518,6 +677,7 @@ textarea:focus-visible {
   display: flex;
   align-items: baseline;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .selected-day-heading h2 {
@@ -791,10 +951,51 @@ textarea:focus-visible {
 .col-sum-pts { text-align: right; width: 85px; font-family: var(--font-mono); font-weight: 700; color: var(--primary-text); background: var(--primary-light); }
 
 .day-col {
-  width: 42px;
-  min-width: 42px;
+  width: 44px;
+  min-width: 44px;
   text-align: center;
   padding: 2px !important;
+}
+
+.day-col-sub {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  margin-top: 2px;
+  color: var(--fg-subtle);
+}
+
+th.day-col.is-sun, td.day-col.is-sun {
+  background: var(--sun-bg);
+}
+th.day-col.is-sun {
+  color: var(--sun-fg);
+}
+th.day-col.is-sun .day-col-sub {
+  color: var(--sun-pill);
+}
+
+th.day-col.is-sat, td.day-col.is-sat {
+  background: var(--sat-bg);
+}
+th.day-col.is-sat {
+  color: var(--sat-fg);
+}
+th.day-col.is-sat .day-col-sub {
+  color: var(--sat-pill);
+}
+
+th.day-col.is-holiday, td.day-col.is-holiday {
+  background: var(--holiday-bg);
+}
+th.day-col.is-holiday {
+  color: var(--holiday-fg);
+  font-weight: 700;
+}
+th.day-col.is-holiday .day-col-sub {
+  color: var(--holiday-pill);
+  font-weight: 700;
 }
 
 td.day-col.past-month {
@@ -1250,6 +1451,16 @@ details.sync-instructions[open] summary {
           <button class="date-nav-btn" id="nextDayBtn" title="วันถัดไป" aria-label="วันถัดไป">›</button>
         </div>
 
+        <div class="dow-header" id="dowHeader" aria-hidden="true">
+          <span class="dow-cell dow-sun">อา.</span>
+          <span class="dow-cell">จ.</span>
+          <span class="dow-cell">อ.</span>
+          <span class="dow-cell">พ.</span>
+          <span class="dow-cell">พฤ.</span>
+          <span class="dow-cell">ศ.</span>
+          <span class="dow-cell dow-sat">ส.</span>
+        </div>
+
         <div class="days-grid" id="daysGrid"></div>
 
         <div class="day-summary-box">
@@ -1272,6 +1483,14 @@ details.sync-instructions[open] summary {
             <button class="btn btn-danger btn-sm" style="flex:1;" id="clearDayBtn">ล้างข้อมูลวันนี้</button>
           </div>
         </div>
+
+        <div class="month-holidays-box" id="monthHolidaysBox" hidden>
+          <div class="month-holidays-title">
+            <span aria-hidden="true">🎏</span>
+            <span>วันหยุดราชการเดือนนี้</span>
+          </div>
+          <ul class="month-holidays-list" id="monthHolidaysList"></ul>
+        </div>
       </aside>
 
       <main class="daily-content">
@@ -1279,6 +1498,7 @@ details.sync-instructions[open] summary {
           <div class="selected-day-heading">
             <h2 id="dailyTitleText">บันทึกผลงาน วันที่ 1</h2>
             <span id="dailyDateSub">—</span>
+            <span class="holiday-badge" id="dayHolidayBadge" hidden></span>
           </div>
 
           <div class="activity-filter-tags">
@@ -1312,8 +1532,8 @@ details.sync-instructions[open] summary {
 
       <div class="table-scroll-container">
         <table class="p4p-table" id="matrixTable">
-          <thead>
-            <tr>
+          <thead id="matrixTableHead">
+            <tr id="matrixHeaderRow">
               <th class="col-sticky-1">ที่</th>
               <th class="col-sticky-2">กิจกรรม</th>
               <th class="col-unit">หน่วยนับ</th>
@@ -1813,6 +2033,149 @@ var CATEGORY_NAMES = {
   meeting: "วิทยากร / ประชุม"
 };
 
+/* ---------- วันหยุดราชการไทย ----------
+   คีย์ = "ปีพ.ศ.-เดือน-วัน" (เช่น "2569-12-5") , ค่า = ชื่อวันหยุด
+   รวมวันหยุดชดเชยและวันหยุดพิเศษตามมติ ครม. ปี 2567-2571
+   หมายเหตุ: วันหยุดจันทรคติปี 2571 (มาฆบูชา/วิสาขบูชา/อาสาฬหบูชา)
+   ยังไม่มีประกาศทางการ เมื่อประกาศแล้วให้เติมลงในตารางนี้ */
+var THAI_HOLIDAYS = {
+  // 2567 (2024)
+  "2567-1-1": "วันขึ้นปีใหม่",
+  "2567-2-24": "วันมาฆบูชา",
+  "2567-2-26": "วันหยุดชดเชยวันมาฆบูชา",
+  "2567-4-6": "วันจักรี",
+  "2567-4-8": "วันหยุดชดเชยวันจักรี",
+  "2567-4-12": "วันหยุดพิเศษเนื่องในเทศกาลสงกรานต์",
+  "2567-4-13": "วันสงกรานต์",
+  "2567-4-14": "วันสงกรานต์",
+  "2567-4-15": "วันสงกรานต์",
+  "2567-4-16": "วันหยุดชดเชยวันสงกรานต์",
+  "2567-5-1": "วันแรงงานแห่งชาติ",
+  "2567-5-4": "วันฉัตรมงคล",
+  "2567-5-6": "วันหยุดชดเชยวันฉัตรมงคล",
+  "2567-5-10": "วันพืชมงคล",
+  "2567-5-22": "วันวิสาขบูชา",
+  "2567-6-3": "วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสุทิดา",
+  "2567-7-20": "วันอาสาฬหบูชา",
+  "2567-7-22": "วันหยุดชดเชยวันอาสาฬหบูชา",
+  "2567-7-28": "วันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว",
+  "2567-7-29": "วันหยุดชดเชยวันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว",
+  "2567-8-12": "วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสิริกิติ์ และวันแม่แห่งชาติ",
+  "2567-10-13": "วันคล้ายวันสวรรคตพระบาทสมเด็จพระปรมินทรมหาภูมิพลอดุลยเดช",
+  "2567-10-14": "วันหยุดชดเชยวันคล้ายวันสวรรคต",
+  "2567-10-23": "วันปิยมหาราช",
+  "2567-12-5": "วันคล้ายวันพระบรมราชสมภพ ร.9 และวันพ่อแห่งชาติ",
+  "2567-12-10": "วันรัฐธรรมนูญ",
+  "2567-12-30": "วันหยุดพิเศษเนื่องในเทศกาลปีใหม่",
+  "2567-12-31": "วันสิ้นปี",
+  // 2568 (2025)
+  "2568-1-1": "วันขึ้นปีใหม่",
+  "2568-2-12": "วันมาฆบูชา",
+  "2568-4-6": "วันจักรี",
+  "2568-4-7": "วันหยุดชดเชยวันจักรี",
+  "2568-4-13": "วันสงกรานต์",
+  "2568-4-14": "วันสงกรานต์",
+  "2568-4-15": "วันสงกรานต์",
+  "2568-4-16": "วันหยุดชดเชยวันสงกรานต์",
+  "2568-5-1": "วันแรงงานแห่งชาติ",
+  "2568-5-4": "วันฉัตรมงคล",
+  "2568-5-5": "วันหยุดชดเชยวันฉัตรมงคล",
+  "2568-5-9": "วันพืชมงคล",
+  "2568-5-11": "วันวิสาขบูชา",
+  "2568-5-12": "วันหยุดชดเชยวันวิสาขบูชา",
+  "2568-6-2": "วันหยุดพิเศษ",
+  "2568-6-3": "วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสุทิดา",
+  "2568-7-10": "วันอาสาฬหบูชา",
+  "2568-7-28": "วันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว",
+  "2568-8-11": "วันหยุดพิเศษ",
+  "2568-8-12": "วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสิริกิติ์ และวันแม่แห่งชาติ",
+  "2568-10-13": "วันคล้ายวันสวรรคตพระบาทสมเด็จพระปรมินทรมหาภูมิพลอดุลยเดช",
+  "2568-10-23": "วันปิยมหาราช",
+  "2568-12-5": "วันคล้ายวันพระบรมราชสมภพ ร.9 และวันพ่อแห่งชาติ",
+  "2568-12-10": "วันรัฐธรรมนูญ",
+  "2568-12-31": "วันสิ้นปี",
+  // 2569 (2026)
+  "2569-1-1": "วันขึ้นปีใหม่",
+  "2569-1-2": "วันหยุดพิเศษเนื่องในเทศกาลปีใหม่",
+  "2569-3-3": "วันมาฆบูชา",
+  "2569-4-6": "วันจักรี",
+  "2569-4-13": "วันสงกรานต์",
+  "2569-4-14": "วันสงกรานต์",
+  "2569-4-15": "วันสงกรานต์",
+  "2569-5-1": "วันแรงงานแห่งชาติ",
+  "2569-5-4": "วันฉัตรมงคล",
+  "2569-5-13": "วันพืชมงคล",
+  "2569-5-31": "วันวิสาขบูชา",
+  "2569-6-1": "วันหยุดชดเชยวันวิสาขบูชา",
+  "2569-6-3": "วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสุทิดา",
+  "2569-7-28": "วันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว",
+  "2569-7-29": "วันอาสาฬหบูชา",
+  "2569-8-12": "วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสิริกิติ์ และวันแม่แห่งชาติ",
+  "2569-10-13": "วันคล้ายวันสวรรคตพระบาทสมเด็จพระปรมินทรมหาภูมิพลอดุลยเดช",
+  "2569-10-23": "วันปิยมหาราช",
+  "2569-12-5": "วันคล้ายวันพระบรมราชสมภพ ร.9 และวันพ่อแห่งชาติ",
+  "2569-12-7": "วันหยุดชดเชยวันพ่อแห่งชาติ",
+  "2569-12-10": "วันรัฐธรรมนูญ",
+  "2569-12-31": "วันสิ้นปี",
+  // 2570 (2027)
+  "2570-1-1": "วันขึ้นปีใหม่",
+  "2570-2-21": "วันมาฆบูชา",
+  "2570-2-22": "วันหยุดชดเชยวันมาฆบูชา",
+  "2570-4-6": "วันจักรี",
+  "2570-4-13": "วันสงกรานต์",
+  "2570-4-14": "วันสงกรานต์",
+  "2570-4-15": "วันสงกรานต์",
+  "2570-5-1": "วันแรงงานแห่งชาติ",
+  "2570-5-3": "วันหยุดชดเชยวันแรงงานแห่งชาติ",
+  "2570-5-4": "วันฉัตรมงคล",
+  "2570-5-20": "วันวิสาขบูชา",
+  "2570-6-3": "วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสุทิดา",
+  "2570-7-18": "วันอาสาฬหบูชา",
+  "2570-7-19": "วันหยุดชดเชยวันอาสาฬหบูชา",
+  "2570-7-28": "วันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว",
+  "2570-8-12": "วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสิริกิติ์ และวันแม่แห่งชาติ",
+  "2570-10-13": "วันคล้ายวันสวรรคตพระบาทสมเด็จพระปรมินทรมหาภูมิพลอดุลยเดช",
+  "2570-10-23": "วันปิยมหาราช",
+  "2570-10-25": "วันหยุดชดเชยวันปิยมหาราช",
+  "2570-12-5": "วันคล้ายวันพระบรมราชสมภพ ร.9 และวันพ่อแห่งชาติ",
+  "2570-12-6": "วันหยุดชดเชยวันพ่อแห่งชาติ",
+  "2570-12-10": "วันรัฐธรรมนูญ",
+  "2570-12-31": "วันสิ้นปี",
+  // 2571 (2028) — วันหยุดจันทรคติยังไม่มีประกาศทางการ
+  "2571-1-1": "วันขึ้นปีใหม่",
+  "2571-1-3": "วันหยุดชดเชยวันขึ้นปีใหม่",
+  "2571-4-6": "วันจักรี",
+  "2571-4-13": "วันสงกรานต์",
+  "2571-4-14": "วันสงกรานต์",
+  "2571-4-15": "วันสงกรานต์",
+  "2571-5-1": "วันแรงงานแห่งชาติ",
+  "2571-5-4": "วันฉัตรมงคล",
+  "2571-6-3": "วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสุทิดา",
+  "2571-6-5": "วันหยุดชดเชยวันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสุทิดา",
+  "2571-7-28": "วันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว",
+  "2571-8-11": "วันหยุดชดเชยวันแม่แห่งชาติ",
+  "2571-8-12": "วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าสิริกิติ์ และวันแม่แห่งชาติ",
+  "2571-10-13": "วันคล้ายวันสวรรคตพระบาทสมเด็จพระปรมินทรมหาภูมิพลอดุลยเดช",
+  "2571-10-23": "วันปิยมหาราช",
+  "2571-12-5": "วันคล้ายวันพระบรมราชสมภพ ร.9 และวันพ่อแห่งชาติ",
+  "2571-12-10": "วันรัฐธรรมนูญ",
+  "2571-12-11": "วันหยุดชดเชยวันรัฐธรรมนูญ",
+  "2571-12-31": "วันสิ้นปี"
+};
+
+var THAI_DOW_SHORT = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
+var THAI_DOW_FULL = ["วันอาทิตย์", "วันจันทร์", "วันอังคาร", "วันพุธ", "วันพฤหัสบดี", "วันศุกร์", "วันเสาร์"];
+
+/** วันในสัปดาห์ของวันที่ (พ.ศ.) — 0=อาทิตย์ ... 6=เสาร์ */
+function dayOfWeekBE(yearBE, month, day) {
+  return new Date(yearBE - 543, month - 1, day).getDay();
+}
+
+/** ชื่อวันหยุดราชการของวันที่ (พ.ศ.) — คืน "" ถ้าไม่ใช่วันหยุด */
+function holidayName(yearBE, month, day) {
+  return THAI_HOLIDAYS[yearBE + "-" + month + "-" + day] || "";
+}
+
 var STORAGE_KEY = "p4p_fm_app_v1";
 var GAS_CONFIG_KEY = "p4p_fm_gas_v1";
 
@@ -1821,10 +2184,13 @@ var GAS_CONFIG_KEY = "p4p_fm_gas_v1";
    ผู้ใช้ยังแก้เป็น URL อื่นของตัวเองในแท็บส่งออกข้อมูลได้ (ค่าที่ตั้งเองจะทับค่านี้) */
 var DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbz3HyfXwRpOyxOYf-cZIkaC_k4giSFocBpYcSA9YAFLgkztp7oTi4B3Vf3Fe9oA5ReT/exec";
 
-/* เริ่มต้นที่เดือนเดียวกับ Google Sheet ต้นแบบ (กุมภาพันธ์ 2569)
-   ถ้าผู้ใช้เคยเลือกเดือนอื่นไว้ ระบบจะคืนค่าเดิมจาก localStorage */
-var DEFAULT_MONTH = 2;
-var DEFAULT_YEAR = 2569;
+/* เริ่มต้นที่เดือนปัจจุบัน (เช่น เปิดครั้งแรกในเดือน พ.ย. 2569 ก็จะเริ่มที่ 11/2569)
+   ถ้าผู้ใช้เคยเลือกเดือนอื่นไว้ ระบบจะคืนค่าเดิมจาก localStorage
+   แต่ถ้าเดือนที่เคยเลือกเป็นอดีต (เดือนที่น้อยกว่าเดือนปัจจุบัน 3 เดือนขึ้นไป)
+   จะกระโดดกลับมาที่เดือนปัจจุบันอัตโนมัติ เพื่อไม่ให้เปิดมาแล้วติดเดือนเก่า
+   (ย้อนกลับไปดูเดือนเก่าได้ตลอดจากตัวเลือกเดือน/ปี) */
+var DEFAULT_MONTH = new Date().getMonth() + 1;
+var DEFAULT_YEAR = new Date().getFullYear() + 543;
 var state = {
   currentMonth: DEFAULT_MONTH,
   currentYear: DEFAULT_YEAR,
@@ -1851,6 +2217,11 @@ var state = {
 
 function loadStorage() {
   try {
+    // เปิดครั้งแรกของเดือน: ให้เลือกวันนี้ไว้เลย (สะดวกกว่าเริ่มที่วันที่ 1)
+    var nowD = new Date();
+    var nowBE = nowD.getFullYear() + 543;
+    state.selectedDay = nowD.getDate();
+
     var raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       var parsed = JSON.parse(raw);
@@ -1859,6 +2230,17 @@ function loadStorage() {
         if (parsed.doctor) state.doctor = Object.assign(state.doctor, parsed.doctor);
         if (parsed.currentMonth) state.currentMonth = parsed.currentMonth;
         if (parsed.currentYear) state.currentYear = parsed.currentYear;
+        // ถ้าเดือนที่เคยเปิดทิ้งไว้เก่ากว่าเดือนปัจจุบัน 3 เดือนขึ้นไป ให้กลับมาเดือนปัจจุบัน
+        var monthsAgo = (nowBE - state.currentYear) * 12 + ((nowD.getMonth() + 1) - state.currentMonth);
+        if (monthsAgo >= 3) {
+          state.currentYear = nowBE;
+          state.currentMonth = nowD.getMonth() + 1;
+          state.selectedDay = 1;
+        }
+        // เปิดครั้งแรกของเดือน: ให้เลือกวันนี้ไว้เลย (สะดวกกว่าเริ่มที่วันที่ 1)
+        if (state.currentYear === nowBE && state.currentMonth === nowD.getMonth() + 1) {
+          state.selectedDay = nowD.getDate();
+        }
         if (parsed.gas) state.gas = Object.assign(state.gas, parsed.gas);
         if (parsed.lastSync) state.lastSync = parsed.lastSync;
         // ถ้าผู้ใช้ยังไม่เคยกดสวิตช์เลือกเอง (gasAutoChosen ไม่ใช่ true)
@@ -2171,13 +2553,39 @@ function renderDaysGrid() {
   document.getElementById("dailyDateSub").textContent =
     THAI_MONTHS[state.currentMonth] + " " + state.currentYear;
 
+  // จัดวันแรกของเดือนให้ตรงกับวันในสัปดาห์ (0=อาทิตย์ ... 6=เสาร์)
+  var firstDow = dayOfWeekBE(state.currentYear, state.currentMonth, 1);
+  for (var p = 0; p < firstDow; p++) {
+    var pad = document.createElement("div");
+    pad.className = "day-cell day-cell-pad";
+    pad.setAttribute("aria-hidden", "true");
+    grid.appendChild(pad);
+  }
+
+  var monthHolidays = [];
+
   for (var d = 1; d <= dim; d++) {
     (function (day) {
+      var dow = dayOfWeekBE(state.currentYear, state.currentMonth, day);
+      var hol = holidayName(state.currentYear, state.currentMonth, day);
+      var isSun = (dow === 0);
+      var isSat = (dow === 6);
+
+      if (hol) {
+        monthHolidays.push({ day: day, name: hol, dow: dow });
+      }
+
       var cell = document.createElement("button");
       cell.type = "button";
       cell.className = "day-cell" +
         (day === state.selectedDay ? " selected" : "") +
-        (totals.dayPts[day] > 0 ? " has-data" : "");
+        (totals.dayPts[day] > 0 ? " has-data" : "") +
+        (hol ? " is-holiday" : (isSun ? " is-sun" : (isSat ? " is-sat" : "")));
+
+      var tip = day + " " + THAI_MONTHS_SHORT[state.currentMonth] + " " + state.currentYear +
+        " (" + THAI_DOW_FULL[dow] + ")";
+      if (hol) tip += " — วันหยุดราชการ: " + hol;
+      cell.title = tip;
 
       var pts = totals.dayPts[day] || 0;
       cell.innerHTML =
@@ -2189,11 +2597,49 @@ function renderDaysGrid() {
     })(d);
   }
 
-  document.getElementById("sidebarSelectedDate").textContent =
-    state.selectedDay + " " + THAI_MONTHS_SHORT[state.currentMonth] + " " + state.currentYear;
+  // อัปเดตรายละเอียดวันที่เลือกใน Sidebar & หัวตาราง
+  var selDow = dayOfWeekBE(state.currentYear, state.currentMonth, state.selectedDay);
+  var selHol = holidayName(state.currentYear, state.currentMonth, state.selectedDay);
+
+  var dateTextWithDow = state.selectedDay + " " + THAI_MONTHS_SHORT[state.currentMonth] +
+    " " + state.currentYear + " (" + THAI_DOW_SHORT[selDow] + ")";
+  document.getElementById("sidebarSelectedDate").textContent = dateTextWithDow;
   document.getElementById("dailyTitleText").textContent =
-    "บันทึกผลงาน วันที่ " + state.selectedDay;
+    "บันทึกผลงาน วันที่ " + state.selectedDay + " (" + THAI_DOW_FULL[selDow] + ")";
   document.getElementById("kpiSelectedDayLabel").textContent = state.selectedDay;
+
+  // ป้ายวันหยุดราชการประจำวันที่เลือก
+  var badge = document.getElementById("dayHolidayBadge");
+  if (badge) {
+    if (selHol) {
+      badge.textContent = "วันหยุดราชการ: " + selHol;
+      badge.title = selHol;
+      badge.hidden = false;
+    } else {
+      badge.textContent = "";
+      badge.hidden = true;
+    }
+  }
+
+  // กล่องสรุปวันหยุดราชการประจำเดือนใน Sidebar
+  var holBox = document.getElementById("monthHolidaysBox");
+  var holList = document.getElementById("monthHolidaysList");
+  if (holBox && holList) {
+    if (monthHolidays.length > 0) {
+      holList.innerHTML = "";
+      monthHolidays.forEach(function (h) {
+        var li = document.createElement("li");
+        li.innerHTML = "<strong>" + h.day + " " + THAI_MONTHS_SHORT[state.currentMonth] + "</strong> " +
+          '<span style="color:var(--fg-subtle);">(' + THAI_DOW_SHORT[h.dow] + ")</span> " +
+          "<span>" + h.name + "</span>";
+        holList.appendChild(li);
+      });
+      holBox.hidden = false;
+    } else {
+      holList.innerHTML = '<li class="month-holidays-empty">เดือนนี้ไม่มีวันหยุดราชการ</li>';
+      holBox.hidden = false;
+    }
+  }
 }
 
 function itemTotalHtml(pts) {
@@ -2282,6 +2728,42 @@ function renderMatrixTable() {
   tbody.innerHTML = "";
   var dim = daysInCurrentMonth();
 
+  // ปรับหัวตาราง 31 วัน แสดงวันในสัปดาห์ (อา.-ส.) และไฮไลต์วันหยุดราชการ
+  var headerRow = document.getElementById("matrixHeaderRow");
+  if (headerRow) {
+    var fixedThs =
+      '<th class="col-sticky-1">ที่</th>' +
+      '<th class="col-sticky-2">กิจกรรม</th>' +
+      '<th class="col-unit">หน่วยนับ</th>' +
+      '<th class="col-rate">แต้ม/หน่วย</th>' +
+      '<th class="col-sum-count">รวมจำนวน</th>' +
+      '<th class="col-sum-pts">รวมแต้ม</th>';
+    var daysThs = "";
+    for (var hd = 1; hd <= 31; hd++) {
+      var hdPast = hd > dim;
+      var hdDow = dayOfWeekBE(state.currentYear, state.currentMonth, hd);
+      var hdHol = holidayName(state.currentYear, state.currentMonth, hd);
+      var hdSun = (hdDow === 0);
+      var hdSat = (hdDow === 6);
+
+      var thCls = "day-col" +
+        (hdPast ? " past-month" : "") +
+        (!hdPast && hdHol ? " is-holiday" : (!hdPast && hdSun ? " is-sun" : (!hdPast && hdSat ? " is-sat" : "")));
+
+      var thTip = hd <= dim
+        ? hd + " " + THAI_MONTHS_SHORT[state.currentMonth] + " " + state.currentYear + " (" + THAI_DOW_FULL[hdDow] + ")" +
+          (hdHol ? " — " + hdHol : "")
+        : "ไม่มีวันที่ " + hd + " ในเดือนนี้";
+
+      daysThs +=
+        '<th class="' + thCls + '" title="' + thTip.replace(/"/g, "&quot;") + '">' +
+          '<div>' + hd + '</div>' +
+          (!hdPast ? '<span class="day-col-sub">' + THAI_DOW_SHORT[hdDow] + '</span>' : '<span class="day-col-sub">—</span>') +
+        '</th>';
+    }
+    headerRow.innerHTML = fixedThs + daysThs;
+  }
+
   ACTIVITIES.forEach(function (act) {
     var tr = document.createElement("tr");
     var rowCount = actMonthTotal(act.id);
@@ -2291,8 +2773,17 @@ function renderMatrixTable() {
     for (var d = 1; d <= 31; d++) {
       var v = getDayValue(act.id, d);
       var past = d > dim;
+      var dDow = dayOfWeekBE(state.currentYear, state.currentMonth, d);
+      var dHol = holidayName(state.currentYear, state.currentMonth, d);
+      var dSun = (dDow === 0);
+      var dSat = (dDow === 6);
+
+      var tdCls = "day-col" +
+        (past ? " past-month" : "") +
+        (!past && dHol ? " is-holiday" : (!past && dSun ? " is-sun" : (!past && dSat ? " is-sat" : "")));
+
       daysHtml +=
-        '<td class="day-col' + (past ? " past-month" : "") + '">' +
+        '<td class="' + tdCls + '">' +
           '<input type="text" inputmode="numeric" class="matrix-input' + (v > 0 ? " has-val" : "") +
             '" data-act="' + act.id + '" data-day="' + d + '" value="' + (v > 0 ? v : "") + '"' +
             (past ? " disabled" : "") + ">" +
