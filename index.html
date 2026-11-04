@@ -2229,13 +2229,13 @@ var THAI_MONTHS_SHORT = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.
    sub = รหัสหมวดย่อย เช่น A1 = ผู้ป่วยนอก first-contact, A3 = หัตถการ */
 var ACTIVITIES = [
   { id: 1,  name: "ตรวจ OPD  Checkup",                          unit: "คน",      pts: 10.00, cat: "A", sub: "A1" },
-  { id: 2,  name: "ออกตรวจ คลินิกหมอครอบครัวและรพ.สต.",         unit: "คน",      pts: 10.00, cat: "B", sub: "B1" },
-  { id: 3,  name: "ออกตรวจ เรือนจำ",                            unit: "คน",      pts: 15.00, cat: "B", sub: "B1" },
+  { id: 2,  name: "ออกตรวจ คลินิกหมอครอบครัวและรพ.สต.",         unit: "คน",      pts: 10.00, cat: "A", sub: "A1" },
+  { id: 3,  name: "ออกตรวจ เรือนจำ",                            unit: "คน",      pts: 15.00, cat: "A", sub: "A1" },
   { id: 4,  name: "ตรวจ OPD ผู้สูงอายุ",                        unit: "คน",      pts: 25.00, cat: "A", sub: "A4" },
   { id: 5,  name: "ตรวจ OPD  Palliative care",                  unit: "คน",      pts: 25.00, cat: "A", sub: "A4" },
   { id: 6,  name: "ตรวจ OPD Telemedicine",                      unit: "คน",      pts: 10.00, cat: "A", sub: "A1" },
   { id: 7,  name: "ตรวจ OPD กัญชาทางการแพทย์",                  unit: "คน",      pts: 25.00, cat: "A", sub: "A1" },
-  { id: 8,  name: "Round Palliative care (1 ครั้ง / ราย / วัน)", unit: "คน",     pts: 10.00, cat: "A", sub: "A4" },
+  { id: 8,  name: "Round Palliative care (1 ครั้ง / ราย / วัน)", unit: "คน",     pts: 10.00, cat: "A", sub: "A2/A4" },
   { id: 9,  name: "Round Home ward (1 ครั้ง / ราย / วัน)",       unit: "คน",     pts: 10.00, cat: "B", sub: "B1" },
   { id: 10, name: "วิทยากร",                                    unit: "ชั่วโมง", pts: 33.00, cat: "E", sub: "E1" },
   { id: 11, name: "ประชุมตามนโยบาย/คำสั่ง",                      unit: "ชั่วโมง", pts: 10.00, cat: "D", sub: "D1" },
@@ -2262,8 +2262,10 @@ var CATEGORY_NAMES = {
 /* ชื่อสั้นของหมวดย่อย (ใช้โชว์ในการ์ดกิจกรรมและ filter) */
 var CATEGORY_SUB_NAMES = {
   A1: "ผู้ป่วยนอก (OPD)",
+  A2: "ผู้ป่วยใน / เวลาฉุกเฉิน",
   A3: "หัตถการ/เฉพาะทาง",
   A4: "ผู้ป่วยกลุ่มเปราะบาง/Palliative",
+  "A2/A4": "ผู้ป่วยใน (IPD) / Palliative",
   B1: "เยี่ยมบ้าน/นอกสถานพยาบาล",
   B2: "ส่งเสริมสุขภาพ-ป้องกันโรค",
   C1: "Referral/Consult รอยต่อ",
