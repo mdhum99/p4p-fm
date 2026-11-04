@@ -880,6 +880,31 @@ textarea:focus-visible {
   max-height: 70vh;
 }
 
+/* หัวเรื่องแบบเดียวกับแถว 1-3 ของ Google Sheet (ใช้ทั้งบนจอ ตอนพิมพ์ PDF และไฟล์ Excel) */
+.sheet-like-header {
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px 10px;
+  background: var(--bg);
+}
+.sheet-like-header .slh-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.sheet-like-header .slh-month {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.sheet-like-header .slh-doctor {
+  font-size: 13.5px;
+  text-align: left;
+  margin-top: 6px;
+  white-space: pre-wrap;
+}
+
 .p4p-table {
   width: 100%;
   border-collapse: separate;
@@ -1359,6 +1384,96 @@ details.sync-instructions[open] summary {
   text-align: center;
   padding: 4px 8px 0;
 }
+
+/* =====================================================================
+   PRINT STYLES — สำหรับพิมพ์หรือบันทึกเป็น PDF (Print to PDF)
+   รองรับแนวนอน (landscape) ซ่อนเมนู/ปุ่มที่ไม่จำเป็น และแสดงหัวเรื่องเหมือนในชีต
+   ===================================================================== */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm 8mm 8mm 8mm;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 9.5pt !important;
+    padding: 0 !important;
+  }
+  .app-header,
+  .nav-tabs,
+  .matrix-toolbar,
+  .storage-note,
+  .toast-container,
+  .modal-backdrop,
+  #view-daily,
+  #view-export,
+  #view-stats {
+    display: none !important;
+  }
+  #view-matrix {
+    display: block !important;
+    padding: 0 !important;
+  }
+  .matrix-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+  .table-scroll-container {
+    overflow: visible !important;
+    border: 1px solid #333 !important;
+    border-radius: 0 !important;
+    max-height: none !important;
+  }
+  .sheet-like-header {
+    border: 1px solid #333 !important;
+    border-bottom: none !important;
+    border-radius: 0 !important;
+    padding: 6px 10px 4px !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .sheet-like-header .slh-title {
+    font-size: 13pt !important;
+    font-weight: 700 !important;
+  }
+  .sheet-like-header .slh-month {
+    font-size: 11pt !important;
+    font-weight: 600 !important;
+  }
+  .sheet-like-header .slh-doctor {
+    font-size: 9.5pt !important;
+    margin-top: 3px !important;
+  }
+  .p4p-table {
+    font-size: 8pt !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+  .p4p-table th,
+  .p4p-table td {
+    border: 1px solid #444 !important;
+    padding: 2px 3px !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .p4p-table input.matrix-input {
+    border: none !important;
+    background: transparent !important;
+    color: #000 !important;
+    font-size: 8pt !important;
+    padding: 0 !important;
+    height: auto !important;
+    box-shadow: none !important;
+  }
+  .col-sticky-1,
+  .col-sticky-2 {
+    position: static !important;
+    box-shadow: none !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1394,7 +1509,7 @@ details.sync-instructions[open] summary {
 
       <button class="doctor-chip" id="doctorChip" title="คลิกเพื่อแก้ไขข้อมูลผู้บันทึก">
         <span id="docNameDisplay">นพ.ฮัมดี หะยีอาลี</span>
-        <small>(แก้ไข)</small>
+        <small id="docChipHint">(แก้ไข)</small>
       </button>
 
       <span class="sync-badge" id="autoSyncBadge" hidden title="ซิงก์อัตโนมัติเปิดอยู่ — ข้อมูลจะถูกส่งเข้าชีตให้เอง">⟳ ออโต้</span>
@@ -1526,8 +1641,17 @@ details.sync-instructions[open] summary {
           <p>พิมพ์ตัวเลขลงช่องได้เลย ใช้ปุ่มลูกศรเลื่อนได้ทั้งแนวตั้งและแนวนอน ผลรวมคำนวณอัตโนมัติ</p>
         </div>
         <div class="matrix-actions">
+          <button class="btn btn-sheet btn-sm" id="matrixPrintBtn" title="พิมพ์หรือบันทึกเป็น PDF (หน้ากระดาษแนวนอน รวมหัวเรื่องเหมือนในชีต)">🖨️ พิมพ์ / บันทึก PDF</button>
+          <button class="btn btn-sheet btn-sm" id="matrixXlsBtn" title="ดาวน์โหลดไฟล์ Excel (.xls) มีหัวเรื่อง 4 แถวแรกเหมือนในชีต">📊 ดาวน์โหลด Excel</button>
           <button class="btn btn-sheet btn-sm" id="matrixQuickCopyBtn">คัดลอกไปวางในชีต (เริ่มที่ G6)</button>
         </div>
+      </div>
+
+      <!-- หัวเรื่องแบบเดียวกับแถว 1-3 ของ Google Sheet (แสดงตอนพิมพ์/ส่งออกด้วย) -->
+      <div class="sheet-like-header" id="sheetLikeHeader">
+        <div class="slh-title" id="slhTitle">แบบบันทึกผลการปฏิบัติงาน</div>
+        <div class="slh-month" id="slhMonth">ประจำเดือน —</div>
+        <div class="slh-doctor" id="slhDoctor">ชื่อ - สกุล&nbsp; —</div>
       </div>
 
       <div class="table-scroll-container">
@@ -1770,9 +1894,15 @@ details.sync-instructions[open] summary {
 <div class="modal-backdrop" id="profileModal" hidden>
   <div class="modal-content" role="dialog" aria-modal="true" aria-label="แก้ไขข้อมูลผู้บันทึก">
     <div class="modal-header">
-      <h3>แก้ไขข้อมูลผู้บันทึก</h3>
+      <h3 id="profileModalTitle">แก้ไขข้อมูลผู้บันทึก</h3>
       <button class="date-nav-btn" id="closeModalBtn" aria-label="ปิด">✕</button>
     </div>
+
+    <p id="regWelcomeNote" hidden style="margin:0 0 14px; font-size:13.5px; line-height:1.55; background:var(--accent-light); border-radius:8px; padding:10px 12px;">
+      👋 ยินดีต้อนรับ! กรอก <strong>ชื่อ - สกุล</strong> ของคุณ แล้วกดบันทึก —
+      ระบบจะ<strong>สร้างแท็บของคุณใน Google Sheet ให้อัตโนมัติ</strong> พร้อมต่อท้ายด้วยเดือน/ปี
+      ไม่ต้องเข้าไปตั้งชื่อแท็บในชีตเอง ทุกครั้งที่บันทึกงานข้อมูลจะลงแท็บของคุณเอง
+    </p>
 
     <div class="form-group">
       <label for="inputDocName">ชื่อ - สกุล</label>
@@ -2198,8 +2328,8 @@ var state = {
   selectedDay: 1,
   activeFilter: "all",
   doctor: {
-    name: "นพ.ฮัมดี หะยีอาลี",
-    position: "นายแพทย์ชำนาญการพิเศษ",
+    name: "",       // ว่าง = ยังไม่ได้ลงทะเบียน — เปิดฟอร์มลงทะเบียนให้อัตโนมัติ (กันเขียนทับแท็บคนอื่น)
+    position: "",
     dept: "กลุ่มงานเวชกรรมสังคม",
     hosp: "โรงพยาบาลนราธิวาสราชนครินทร์"
   },
@@ -2210,6 +2340,7 @@ var state = {
     autoSync: true  // Auto Save to Sheet — ส่งขึ้นชีตเองหลังแก้ไขข้อมูล (เปิดเป็นค่าเริ่มต้น)
   },
   gasAutoChosen: false, // ผู้ใช้เคยกดสวิตช์ซิงก์อัตโนมัติเองหรือยัง
+  registered: false, // ลงทะเบียนชื่อบนเครื่องนี้แล้ว (บันทึกครั้งแรก = สร้างแท็บในชีตให้อัตโนมัติ)
   lastSync: null,   // { tab, month, year, pts, at } ข้อมูลที่ซิงก์สำเร็จล่าสุด
   store: {}   // store["2569_2"][actId][day] = qty
 };
@@ -2244,6 +2375,8 @@ function loadStorage() {
         }
         if (parsed.gas) state.gas = Object.assign(state.gas, parsed.gas);
         if (parsed.lastSync) state.lastSync = parsed.lastSync;
+        // ผู้ใช้เดิมที่เคยมีชื่อผู้บันทึกอยู่แล้ว = ถือว่าลงทะเบียนแล้ว (ไม่เด้งฟอร์มต้อนรับ)
+        state.registered = parsed.registered === true || !!(parsed.doctor && parsed.doctor.name);
         // ถ้าผู้ใช้ยังไม่เคยกดสวิตช์เลือกเอง (gasAutoChosen ไม่ใช่ true)
         // ให้ใช้ค่าเริ่มต้นล่าสุด = เปิดซิงก์อัตโนมัติ
         if (parsed.gasAutoChosen !== true) state.gas.autoSync = true;
@@ -2275,6 +2408,7 @@ function saveStorage() {
       currentYear: state.currentYear,
       gas: state.gas,
       lastSync: state.lastSync,
+      registered: state.registered === true,
       gasAutoChosen: state.gasAutoChosen === true
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -2415,6 +2549,16 @@ function init() {
   setupDoctorModal();
   setupTabs();
 
+  /* ปุ่มในแท็บ "ตาราง 31 วัน" — พิมพ์/บันทึก PDF และดาวน์โหลด Excel (มีหัวเรื่องเหมือนในชีต) */
+  document.getElementById("matrixPrintBtn").addEventListener("click", function () {
+    document.querySelector('.tab-btn[data-tab="matrix"]').click();
+    updateSheetLikeHeader();
+    window.print();
+  });
+  document.getElementById("matrixXlsBtn").addEventListener("click", function () {
+    downloadMatrixExcel();
+  });
+
   document.getElementById("prevDayBtn").addEventListener("click", function () {
     if (state.selectedDay > 1) selectDay(state.selectedDay - 1);
   });
@@ -2476,11 +2620,37 @@ function init() {
   setupGasActions();
   renderAll();
   syncBadgeIdle();
+
+  /* ผู้ใช้ใหม่ (ยังไม่เคยลงทะเบียนชื่อบนเครื่องนี้) — เปิดฟอร์มลงทะเบียนให้ทันที
+     เพื่อให้ทุกคนมีชื่อ+แท็บของตัวเอง และไม่เขียนทับแท็บของคนอื่นโดยไม่ตั้งใจ */
+  if (!state.registered) {
+    setTimeout(function () { openDoctorModal("register"); }, 350);
+  }
 }
 
 function updateDoctorDisplay() {
-  document.getElementById("docNameDisplay").textContent = state.doctor.name;
+  var hasName = !!state.doctor.name;
+  document.getElementById("docNameDisplay").textContent = hasName ? state.doctor.name : "＋ ลงทะเบียนผู้ใช้ใหม่";
+  document.getElementById("docChipHint").textContent = hasName ? "(แก้ไข)" : "(คลิกที่นี่)";
   document.getElementById("docSubInfo").textContent = state.doctor.dept + " " + state.doctor.hosp;
+}
+
+/* โหมด "register" = ผู้ใช้ใหม่ (ยังไม่มีชื่อบนเครื่องนี้) — บันทึกครั้งแรกจะสร้างแท็บในชีตให้เลย */
+var doctorModalMode = "edit";
+
+function openDoctorModal(mode) {
+  doctorModalMode = (mode === "register" && !state.registered) ? "register" : "edit";
+  document.getElementById("inputDocName").value = state.doctor.name;
+  document.getElementById("inputDocPosition").value = state.doctor.position;
+  document.getElementById("inputDocDept").value = state.doctor.dept;
+  document.getElementById("inputDocHosp").value = state.doctor.hosp;
+  var isReg = doctorModalMode === "register";
+  document.getElementById("profileModalTitle").textContent = isReg ? "👋 ลงทะเบียนผู้ใช้ใหม่" : "แก้ไขข้อมูลผู้บันทึก";
+  document.getElementById("regWelcomeNote").hidden = !isReg;
+  document.getElementById("saveProfileBtn").textContent = isReg ? "🚀 บันทึก และสร้างแท็บของฉันในชีต" : "บันทึกข้อมูล";
+  document.getElementById("cancelModalBtn").textContent = isReg ? "ยังไม่ต้องการ ใช้ในเครื่องก่อน" : "ยกเลิก";
+  document.getElementById("profileModal").hidden = false;
+  setTimeout(function () { document.getElementById("inputDocName").focus(); }, 50);
 }
 
 function setupDoctorModal() {
@@ -2488,11 +2658,7 @@ function setupDoctorModal() {
   var openBtn = document.getElementById("doctorChip");
 
   openBtn.addEventListener("click", function () {
-    document.getElementById("inputDocName").value = state.doctor.name;
-    document.getElementById("inputDocPosition").value = state.doctor.position;
-    document.getElementById("inputDocDept").value = state.doctor.dept;
-    document.getElementById("inputDocHosp").value = state.doctor.hosp;
-    modal.hidden = false;
+    openDoctorModal(state.registered ? "edit" : "register");
   });
 
   function closeModal() { modal.hidden = true; }
@@ -2506,7 +2672,15 @@ function setupDoctorModal() {
 
   document.getElementById("saveProfileBtn").addEventListener("click", function () {
     var name = document.getElementById("inputDocName").value.trim();
-    state.doctor.name = name || state.doctor.name;
+    if (!name) {
+      showToast(doctorModalMode === "register"
+        ? "กรุณากรอกชื่อ - สกุล ของคุณก่อน — ระบบจะใช้ชื่อนี้สร้างแท็บใน Google Sheet ให้อัตโนมัติ"
+        : "กรุณากรอกชื่อ - สกุล");
+      document.getElementById("inputDocName").focus();
+      return;
+    }
+    var wasRegistering = doctorModalMode === "register";
+    state.doctor.name = name;
     state.doctor.position = document.getElementById("inputDocPosition").value.trim();
     state.doctor.dept = document.getElementById("inputDocDept").value.trim();
     state.doctor.hosp = document.getElementById("inputDocHosp").value.trim();
@@ -2514,12 +2688,19 @@ function setupDoctorModal() {
       var tabInp = document.getElementById("inputSheetTabName");
       if (tabInp) tabInp.value = state.doctor.name;
     }
+    state.registered = true;
     saveStorage();
     updateDoctorDisplay();
     updateTabNamePreview();
+    updateSheetLikeHeader();
     closeModal();
-    showToast("บันทึกข้อมูลผู้บันทึกเรียบร้อย");
-    scheduleAutoSync();   // ชื่อ/ตำแหน่งเปลี่ยน = ข้อมูลหัวตารางในชีตเปลี่ยนด้วย
+    if (wasRegistering) {
+      showToast("ลงทะเบียนเรียบร้อย — กำลังสร้างแท็บ \"" + effectiveTabName() + "\" ใน Google Sheet…");
+      pushToSheet({ auto: false });   // สร้างแท็บในชีตทันที ผู้ใช้ไม่ต้องเข้าไปสร้างเอง (แม้ยังไม่มีข้อมูล)
+    } else {
+      showToast("บันทึกข้อมูลผู้บันทึกเรียบร้อย");
+      scheduleAutoSync();   // ชื่อ/ตำแหน่งเปลี่ยน = ข้อมูลหัวตารางในชีตเปลี่ยนด้วย
+    }
   });
 }
 
@@ -2841,7 +3022,99 @@ function renderMatrixTable() {
     });
   });
 
+  updateSheetLikeHeader();
   updateCalculations();
+}
+
+/* หัวเรื่อง 3 บรรทัดแบบเดียวกับแถว 1-3 ของชีต:
+   A1 = "แบบบันทึกผลการปฏิบัติงาน", A2 = "ประจำเดือน <เดือน> <ปี>",
+   A3 = "ชื่อ - สกุล <ชื่อ>   ตำแหน่ง   <ตำแหน่ง> กลุ่มงาน <กลุ่มงาน>" */
+function sheetHeaderLines() {
+  var d = state.doctor || {};
+  var line3 = "ชื่อ - สกุล  " + (d.name || "");
+  if (d.position) line3 += "    ตำแหน่ง   " + d.position;
+  if (d.dept) {
+    // ตัดคำว่า "กลุ่มงาน" ที่พิมพ์ติดมากับค่ากลุ่มงานออกก่อน กันซ้ำเป็น "กลุ่มงาน กลุ่มงาน…"
+    var dept = String(d.dept).replace(/^\s*กลุ่มงาน\s*/, "");
+    line3 += "  กลุ่มงาน " + dept;
+  }
+  return {
+    title: "แบบบันทึกผลการปฏิบัติงาน",
+    month: "ประจำเดือน " + THAI_MONTHS[state.currentMonth] + " " + state.currentYear,
+    doctor: line3
+  };
+}
+
+function updateSheetLikeHeader() {
+  var lines = sheetHeaderLines();
+  var t = document.getElementById("slhTitle");
+  var m = document.getElementById("slhMonth");
+  var d = document.getElementById("slhDoctor");
+  if (t) t.textContent = lines.title;
+  if (m) m.textContent = lines.month;
+  if (d) d.textContent = lines.doctor;
+}
+
+/* ดาวน์โหลด .xls (HTML table ที่ Excel เปิดได้) — มีหัวเรื่อง 3 แถวแรกเหมือนในชีต
+   โครงคอลัมน์: ที่ | กิจกรรม | หน่วยนับ | แต้ม/หน่วย | รวมจำนวน | รวมแต้ม | 1..31
+   แถวสุดท้าย = รวมทั้งหมด ตรงกับแถวที่ 5 ของชีต */
+function downloadMatrixExcel() {
+  var lines = sheetHeaderLines();
+  var dim = daysInCurrentMonth();
+  var t = monthTotals();
+
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  var dayHead = "";
+  for (var h = 1; h <= 31; h++) {
+    var dow = dayOfWeekBE(state.currentYear, state.currentMonth, h);
+    dayHead += "<th>" + (h <= dim ? h + "<br><small>" + THAI_DOW_SHORT[dow] + "</small>" : h) + "</th>";
+  }
+
+  var body = "";
+  ACTIVITIES.forEach(function (act) {
+    var count = actMonthTotal(act.id);
+    body += "<tr><td>" + act.id + "</td><td>" + esc(act.name) + "</td><td>" + esc(act.unit) + "</td>" +
+      "<td>" + act.pts + "</td><td>" + count + "</td><td>" + (count * act.pts) + "</td>";
+    for (var d = 1; d <= 31; d++) {
+      var v = getDayValue(act.id, d);
+      body += "<td>" + (v > 0 ? v : "") + "</td>";
+    }
+    body += "</tr>";
+  });
+
+  var footRow = "<tr><td></td><td><b>รวมทั้งหมด (แถวที่ 5 ของชีต)</b></td><td></td><td></td>" +
+    "<td><b>" + t.totalCount + "</b></td><td><b>" + t.totalPts + "</b></td>";
+  for (var f = 1; f <= 31; f++) {
+    var dp = t.dayPts[f] || 0;
+    footRow += "<td><b>" + (dp > 0 ? dp : "") + "</b></td>";
+  }
+  footRow += "</tr>";
+
+  var html =
+    "<html><head><meta charset='utf-8'></head><body>" +
+    "<table border='1' cellspacing='0' cellpadding='3' style='font-size:10pt;font-family:Sarabun,Tahoma,sans-serif;'>" +
+    "<tr><td colspan='37' align='center' style='font-size:14pt;font-weight:bold;'>" + esc(lines.title) + "</td></tr>" +
+    "<tr><td colspan='37' align='center' style='font-size:12pt;font-weight:bold;'>" + esc(lines.month) + "</td></tr>" +
+    "<tr><td colspan='37' style='font-size:10pt;'>" + esc(lines.doctor) + "</td></tr>" +
+    "<tr><th>ที่</th><th>กิจกรรม</th><th>หน่วยนับ</th><th>แต้ม/หน่วย</th><th>รวมจำนวน</th><th>รวมแต้ม</th>" + dayHead + "</tr>" +
+    body + footRow +
+    "</table></body></html>";
+
+  var blob = new Blob(["﻿" + html], { type: "application/vnd.ms-excel;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "P4P_" + (state.doctor.name || "FM").replace(/[\\/?*[\]:\s]+/g, "_") +
+    "_" + THAI_MONTHS_SHORT[state.currentMonth] + "_" + state.currentYear + ".xls";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  showToast("ดาวน์โหลดไฟล์ Excel เรียบร้อย");
 }
 
 /* ---------- KPI / totals ---------- */
@@ -3157,13 +3430,13 @@ function updateTabNamePreview() {
   if (el) {
     el.textContent = full
       ? "แท็บที่จะเขียนในชีต: " + full + "  (เปลี่ยนตามเดือนที่กำลังดูอยู่)"
-      : "ยังไม่มีชื่อ — ระบบจะใช้ชื่อผู้บันทึกในโปรไฟล์แทน";
+      : "ยังไม่มีชื่อแท็บ — กรุณาคลิก '＋ ลงทะเบียนผู้ใช้ใหม่' มุมบนขวาเพื่อตั้งชื่อ";
   }
   var btn = document.getElementById("headerSaveSheetBtn");
   if (btn) {
     btn.title = full
       ? "ส่งข้อมูลเดือนนี้เข้าแท็บ \"" + full + "\""
-      : "ส่งข้อมูลเดือนนี้เข้า Google Sheet ทันที";
+      : "ยังไม่มีชื่อผู้บันทึก — คลิกปุ่มชื่อผู้บันทึกมุมบนขวาเพื่อตั้งชื่อก่อนส่งเข้าชีต";
   }
 }
 
@@ -3400,10 +3673,10 @@ function pushToSheet(opts) {
   var tabName = effectiveTabName();
   if (!tabName) {
     if (o.auto) {
-      setSyncBadge("badge-err", "⚠ ไม่มีชื่อแท็บ", "กรุณากรอกชื่อแท็บในชีตที่แท็บ ส่งออกข้อมูล");
+      setSyncBadge("badge-err", "⚠ ยังไม่ลงทะเบียน", "ยังไม่มีชื่อผู้บันทึก — คลิกปุ่มชื่อผู้บันทึก (มุมบนขวา) เพื่อลงทะเบียน ระบบจะสร้างแท็บของคุณในชีตให้อัตโนมัติ");
       return;
     }
-    showToast("กรุณากรอกชื่อแท็บในชีตก่อนบันทึก");
+    showToast("ยังไม่มีชื่อผู้บันทึก — คลิกปุ่มชื่อผู้บันทึก (มุมบนขวา) เพื่อลงทะเบียนก่อนบันทึก");
     return;
   }
 
@@ -3429,7 +3702,13 @@ function pushToSheet(opts) {
     tabName: tabName,
     month: state.currentMonth,
     year: state.currentYear,
-    doctor: state.doctor,
+    // ส่งกลุ่มงานแบบไม่มีคำว่า "กลุ่มงาน" นำหน้า เพราะ Code.gs ใส่คำนี้ให้เอง (กันซ้ำ "กลุ่มงาน กลุ่มงาน…" ใน A3)
+    doctor: {
+      name: state.doctor.name,
+      position: state.doctor.position,
+      dept: String(state.doctor.dept || "").replace(/^\s*กลุ่มงาน\s*/, ""),
+      hosp: state.doctor.hosp
+    },
     matrix: generateMatrixArray()
   };
 
@@ -3586,6 +3865,7 @@ function setupSyncActions() {
       if (!parsed || !parsed.store) throw new Error("ไม่พบข้อมูล store");
       state.store = Object.assign(state.store, parsed.store);
       if (parsed.doctor) state.doctor = Object.assign(state.doctor, parsed.doctor);
+      if (state.doctor.name) state.registered = true; // ข้อมูลสำรองมีชื่อผู้บันทึก = ลงทะเบียนแล้ว
       saveStorage();
       renderAll();
       showToast("นำเข้าข้อมูลสำรองเรียบร้อย");
@@ -3605,6 +3885,7 @@ function renderAll() {
   renderMatrixTable();
   renderStats();
   updateTabNamePreview(); // ชื่อแท็บขึ้นกับเดือน/ปีที่กำลังดูอยู่
+  updateSheetLikeHeader(); // หัวเรื่อง "ประจำเดือน …" ในตาราง 31 วัน เปลี่ยนตามเดือน/ผู้บันทึก
 }
 
 window.addEventListener("DOMContentLoaded", init);
