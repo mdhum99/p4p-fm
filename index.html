@@ -776,6 +776,18 @@ textarea:focus-visible {
   font-weight: 600;
 }
 
+/* ป้ายหมวดย่อย A1–F3 ในการ์ดกิจกรรม (กรอบภาระงาน FM ฉบับ 19/2568) */
+.sub-cat-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg-muted);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
 .activity-stepper {
   display: flex;
   align-items: center;
@@ -1686,10 +1698,11 @@ details.sync-instructions[open] summary {
 
           <div class="activity-filter-tags">
             <button class="filter-tag active" data-filter="all">ทั้งหมด (20)</button>
-            <button class="filter-tag" data-filter="opd">OPD / ตรวจรักษา</button>
-            <button class="filter-tag" data-filter="palliative">Palliative / ดูแลต่อเนื่อง</button>
-            <button class="filter-tag" data-filter="community">ชุมชน / ออกตรวจ</button>
-            <button class="filter-tag" data-filter="meeting">ประชุม / วิชาการ</button>
+            <button class="filter-tag" data-filter="A">A. ดูแลผู้ป่วย</button>
+            <button class="filter-tag" data-filter="B">B. บ้านและชุมชน</button>
+            <button class="filter-tag" data-filter="C">C. นำทีม/ประสาน</button>
+            <button class="filter-tag" data-filter="D">D. บริหาร</button>
+            <button class="filter-tag" data-filter="E">E. วิชาการ/สอน</button>
             <button class="filter-tag" data-filter="hasdata">เฉพาะที่มีผลงาน</button>
           </div>
         </div>
@@ -2204,34 +2217,52 @@ var THAI_MONTHS_SHORT = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.
   "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
 // 20 activities, exact names/units/rates from the sheet (typos "ชั้วโมง" corrected to "ชั่วโมง", "หัตฐการ" kept as in sheet)
+/* cat = หมวดหลัก A–F ตาม "ตารางสรุปภาระงานแพทย์เวชศาสตร์ครอบครัว แยกประเภทงาน"
+   (ประกาศราชวิทยาลัยแพทย์เวชศาสตร์ครอบครัวฯ 19/2568 + WONCA Europe 2023)
+   sub = รหัสหมวดย่อย เช่น A1 = ผู้ป่วยนอก first-contact, A3 = หัตถการ */
 var ACTIVITIES = [
-  { id: 1,  name: "ตรวจ OPD  Checkup",                          unit: "คน",      pts: 10.00, cat: "opd" },
-  { id: 2,  name: "ออกตรวจ คลินิกหมอครอบครัวและรพ.สต.",         unit: "คน",      pts: 10.00, cat: "community" },
-  { id: 3,  name: "ออกตรวจ เรือนจำ",                            unit: "คน",      pts: 15.00, cat: "community" },
-  { id: 4,  name: "ตรวจ OPD ผู้สูงอายุ",                        unit: "คน",      pts: 25.00, cat: "opd" },
-  { id: 5,  name: "ตรวจ OPD  Palliative care",                  unit: "คน",      pts: 25.00, cat: "palliative" },
-  { id: 6,  name: "ตรวจ OPD Telemedicine",                      unit: "คน",      pts: 10.00, cat: "opd" },
-  { id: 7,  name: "ตรวจ OPD กัญชาทางการแพทย์",                  unit: "คน",      pts: 25.00, cat: "opd" },
-  { id: 8,  name: "Round Palliative care (1 ครั้ง / ราย / วัน)", unit: "คน",     pts: 10.00, cat: "palliative" },
-  { id: 9,  name: "Round Home ward (1 ครั้ง / ราย / วัน)",       unit: "คน",     pts: 10.00, cat: "palliative" },
-  { id: 10, name: "วิทยากร",                                    unit: "ชั่วโมง", pts: 33.00, cat: "meeting" },
-  { id: 11, name: "ประชุมตามนโยบาย/คำสั่ง",                      unit: "ชั่วโมง", pts: 10.00, cat: "meeting" },
-  { id: 12, name: "ประชุมตามแผนพัฒนาบุคลากร/ยุทธศาสตร์ รพ.",     unit: "ชั่วโมง", pts: 8.00,  cat: "meeting" },
-  { id: 13, name: "ประชุมวิชาการ,PCT,ภายในโรงพยาบาล",            unit: "ชั่วโมง", pts: 10.00, cat: "meeting" },
-  { id: 14, name: "ประชุมโดยการสมัคร",                           unit: "ครั้ง",   pts: 7.85,  cat: "meeting" },
-  { id: 15, name: "ลงชุมชนเยี่ยมบ้าน Home Health Care",          unit: "คน",      pts: 30.00, cat: "community" },
-  { id: 16, name: "รับ Consult Palliative Care",                unit: "คน",      pts: 30.00, cat: "palliative" },
-  { id: 17, name: "รับ Consult จาก PCC/PCU ที่รับผิดชอบ",       unit: "คน",      pts: 15.00, cat: "community" },
-  { id: 18, name: "Family Meeting /Counselling",                unit: "คน",      pts: 30.00, cat: "palliative" },
-  { id: 19, name: "DM Remission",                               unit: "คน",      pts: 25.00, cat: "opd" },
-  { id: 20, name: "หัตฐการ",                                    unit: "คน",      pts: 8.00,  cat: "opd" }
+  { id: 1,  name: "ตรวจ OPD  Checkup",                          unit: "คน",      pts: 10.00, cat: "A", sub: "A1" },
+  { id: 2,  name: "ออกตรวจ คลินิกหมอครอบครัวและรพ.สต.",         unit: "คน",      pts: 10.00, cat: "B", sub: "B1" },
+  { id: 3,  name: "ออกตรวจ เรือนจำ",                            unit: "คน",      pts: 15.00, cat: "B", sub: "B1" },
+  { id: 4,  name: "ตรวจ OPD ผู้สูงอายุ",                        unit: "คน",      pts: 25.00, cat: "A", sub: "A4" },
+  { id: 5,  name: "ตรวจ OPD  Palliative care",                  unit: "คน",      pts: 25.00, cat: "A", sub: "A4" },
+  { id: 6,  name: "ตรวจ OPD Telemedicine",                      unit: "คน",      pts: 10.00, cat: "A", sub: "A1" },
+  { id: 7,  name: "ตรวจ OPD กัญชาทางการแพทย์",                  unit: "คน",      pts: 25.00, cat: "A", sub: "A1" },
+  { id: 8,  name: "Round Palliative care (1 ครั้ง / ราย / วัน)", unit: "คน",     pts: 10.00, cat: "A", sub: "A4" },
+  { id: 9,  name: "Round Home ward (1 ครั้ง / ราย / วัน)",       unit: "คน",     pts: 10.00, cat: "B", sub: "B1" },
+  { id: 10, name: "วิทยากร",                                    unit: "ชั่วโมง", pts: 33.00, cat: "E", sub: "E1" },
+  { id: 11, name: "ประชุมตามนโยบาย/คำสั่ง",                      unit: "ชั่วโมง", pts: 10.00, cat: "D", sub: "D1" },
+  { id: 12, name: "ประชุมตามแผนพัฒนาบุคลากร/ยุทธศาสตร์ รพ.",     unit: "ชั่วโมง", pts: 8.00,  cat: "D", sub: "D1" },
+  { id: 13, name: "ประชุมวิชาการ,PCT,ภายในโรงพยาบาล",            unit: "ชั่วโมง", pts: 10.00, cat: "C", sub: "C2" },
+  { id: 14, name: "ประชุมโดยการสมัคร",                           unit: "ครั้ง",   pts: 7.85,  cat: "E", sub: "E1" },
+  { id: 15, name: "ลงชุมชนเยี่ยมบ้าน Home Health Care",          unit: "คน",      pts: 30.00, cat: "B", sub: "B1" },
+  { id: 16, name: "รับ Consult Palliative Care",                unit: "คน",      pts: 30.00, cat: "C", sub: "C1" },
+  { id: 17, name: "รับ Consult จาก PCC/PCU ที่รับผิดชอบ",       unit: "คน",      pts: 15.00, cat: "C", sub: "C1" },
+  { id: 18, name: "Family Meeting /Counselling",                unit: "คน",      pts: 30.00, cat: "C", sub: "C2" },
+  { id: 19, name: "DM Remission",                               unit: "คน",      pts: 25.00, cat: "B", sub: "B2" },
+  { id: 20, name: "หัตฐการ",                                    unit: "คน",      pts: 8.00,  cat: "A", sub: "A3" }
 ];
 
 var CATEGORY_NAMES = {
-  opd: "ตรวจรักษา OPD / Telemedicine",
-  community: "ออกตรวจชุมชน / รพ.สต. / เยี่ยมบ้าน",
-  palliative: "Palliative Care / Home Ward / Family Meeting",
-  meeting: "วิทยากร / ประชุม"
+  A: "A. งานบริการดูแลผู้ป่วย",
+  B: "B. งานดูแลที่บ้านและชุมชน",
+  C: "C. งานนำทีมและประสานเครือข่าย",
+  D: "D. งานบริหารระบบบริการ",
+  E: "E. งานวิชาการ การสอน คุณภาพ และวิจัย",
+  F: "F. งานเอกสารและธุรการ"
+};
+
+/* ชื่อสั้นของหมวดย่อย (ใช้โชว์ในการ์ดกิจกรรมและ filter) */
+var CATEGORY_SUB_NAMES = {
+  A1: "ผู้ป่วยนอก (OPD)",
+  A3: "หัตถการ/เฉพาะทาง",
+  A4: "ผู้ป่วยกลุ่มเปราะบาง/Palliative",
+  B1: "เยี่ยมบ้าน/นอกสถานพยาบาล",
+  B2: "ส่งเสริมสุขภาพ-ป้องกันโรค",
+  C1: "Referral/Consult รอยต่อ",
+  C2: "ผู้นำทีม/ประชุมวางแผนดูแล",
+  D1: "บริหารหน่วยงาน",
+  E1: "การสอน/พัฒนากำลังคน"
 };
 
 /* ---------- วันหยุดราชการไทย ----------
@@ -2953,6 +2984,7 @@ function renderDailyActivities() {
       '<div class="activity-info">' +
         '<div class="activity-title"><span class="item-badge">' + act.id + "</span><span>" + act.name + "</span></div>" +
         '<div class="activity-meta">' +
+          (CATEGORY_SUB_NAMES[act.sub] ? '<span class="sub-cat-tag" title="' + CATEGORY_NAMES[act.cat] + '">' + act.sub + " " + CATEGORY_SUB_NAMES[act.sub] + "</span>" : "") +
           "<span>หน่วยนับ: <strong>" + act.unit + "</strong></span>" +
           '<span class="pts-badge">' + fmtNum(act.pts) + " แต้ม/" + act.unit + "</span>" +
         "</div>" +
