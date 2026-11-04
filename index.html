@@ -1399,16 +1399,17 @@ details.sync-instructions[open] summary {
     color: #000 !important;
     font-size: 9.5pt !important;
     padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   .app-header,
-  .nav-tabs,
+  .kpi-strip,
+  .tabs-nav,
   .matrix-toolbar,
   .storage-note,
   .toast-container,
   .modal-backdrop,
-  #view-daily,
-  #view-export,
-  #view-stats {
+  .view-panel {
     display: none !important;
   }
   #view-matrix {
@@ -1448,16 +1449,83 @@ details.sync-instructions[open] summary {
     margin-top: 3px !important;
   }
   .p4p-table {
-    font-size: 8pt !important;
+    font-size: 7pt !important;
     border-collapse: collapse !important;
     width: 100% !important;
+    table-layout: fixed !important; /* บังคับความกว้างคอลัมน์ให้พอดีกระดาษ ไม่ให้วันที่ 25-31 หลุดออกนอกหน้า */
   }
   .p4p-table th,
   .p4p-table td {
     border: 1px solid #444 !important;
-    padding: 2px 3px !important;
+    padding: 1px 2px !important;
     background: #fff !important;
     color: #000 !important;
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  /* ความกว้างคอลัมน์ในกระดาษ (รวม = 281 มม. ของ A4 แนวนอน เว้นริม 8 มม.) */
+  .p4p-table th.col-sticky-1, .p4p-table td.col-sticky-1 { width: 6mm !important; }
+  .p4p-table th.col-sticky-2, .p4p-table td.col-sticky-2 { width: 44mm !important; }
+  .p4p-table th.col-unit,    .p4p-table td.col-unit    { width: 10mm !important; }
+  .p4p-table th.col-rate,    .p4p-table td.col-rate    { width: 11mm !important; }
+  .p4p-table th.col-sum-count, .p4p-table td.col-sum-count { width: 10mm !important; }
+  .p4p-table th.col-sum-pts,  .p4p-table td.col-sum-pts  { width: 11mm !important; }
+  .p4p-table th.day-col, .p4p-table td.day-col {
+    width: auto !important;
+    min-width: 0 !important;
+  }
+  .p4p-table .day-col-sub {
+    font-size: 5.5pt !important;
+    margin-top: 0 !important;
+  }
+  /* สีคอลัมน์วันหยุด/เสาร์/อาทิตย์ ให้เหมือนหน้าเว็บ (ต้องมาหลังกฎ background:#fff ข้างบน)
+     ใช้ค่าสีโหมดสว่างตรง ๆ ไม่ใช้ตัวแปร เพราะโหมดมืดของหน้าเว็บมีสีเข้มเกินไปสำหรับกระดาษ */
+  .p4p-table th.day-col.is-sun,
+  .p4p-table td.day-col.is-sun {
+    background: #fef2f2 !important;
+    color: #991b1b !important;
+  }
+  .p4p-table th.day-col.is-sat,
+  .p4p-table td.day-col.is-sat {
+    background: #faf5ff !important;
+    color: #581c87 !important;
+  }
+  .p4p-table th.day-col.is-holiday,
+  .p4p-table td.day-col.is-holiday {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+    font-weight: 700 !important;
+  }
+  .p4p-table .day-col.past-month {
+    background: #f3f4f6 !important;
+    color: #9ca3af !important;
+  }
+  /* ไฮไลต์คอลัมน์ "รวมแต้ม" ให้เด่นชัด (สีเดียวกับหน้าเว็บ แต่เข้มกว่าเพื่อให้เห็นชัดบนกระดาษ) */
+  .p4p-table th.col-sum-pts {
+    background: #5eead4 !important;
+    color: #042f2e !important;
+    font-weight: 800 !important;
+  }
+  .p4p-table td.col-sum-pts {
+    background: #ccfbf1 !important;
+    color: #042f2e !important;
+    font-weight: 800 !important;
+  }
+  .p4p-table td.col-sum-count {
+    background: #f1f5f9 !important;
+    font-weight: 600 !important;
+  }
+  .p4p-table tfoot .row-total td {
+    background: #f8fafc !important;
+    font-weight: 700 !important;
+  }
+  .p4p-table tfoot .row-total td.col-sum-pts {
+    background: #5eead4 !important;
+    color: #042f2e !important;
+    font-weight: 800 !important;
+    border-top: 2px solid #0f766e !important;
   }
   .p4p-table input.matrix-input {
     border: none !important;
