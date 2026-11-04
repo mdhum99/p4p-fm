@@ -1114,13 +1114,11 @@ td.day-col.past-month {
   font-size: 13px;
 }
 
-/* ป้ายชื่อหมวด A–F ในกราฟสรุป: กว้างพอให้ชื่อหมวดยาว (เช่น E) อยู่บนบรรทัดเดียว */
+/* ป้ายชื่อหมวด A–F ในกราฟสรุป: กว้างขึ้นจาก 170 → 200px ให้ชื่อยาว (เช่น E) ตัดบรรทัดน้อยลง */
 .cat-breakdown-label {
   flex: 0 0 200px;
   min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.3;
 }
 
 .rank-bar-wrap {
