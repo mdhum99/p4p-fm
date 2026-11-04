@@ -1819,7 +1819,7 @@ var GAS_CONFIG_KEY = "p4p_fm_gas_v1";
 /* URL เว็บแอป Google Apps Script ของกลุ่มงาน —
    วาง URL ที่ลงท้ายด้วย /exec ที่นี่ครั้งเดียว ผู้ใช้ทุกคนจะได้ค่าเริ่มต้นนี้อัตโนมัติ
    ผู้ใช้ยังแก้เป็น URL อื่นของตัวเองในแท็บส่งออกข้อมูลได้ (ค่าที่ตั้งเองจะทับค่านี้) */
-var DEFAULT_GAS_URL = "";
+var DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbz3HyfXwRpOyxOYf-cZIkaC_k4giSFocBpYcSA9YAFLgkztp7oTi4B3Vf3Fe9oA5ReT/exec";
 
 /* เริ่มต้นที่เดือนเดียวกับ Google Sheet ต้นแบบ (กุมภาพันธ์ 2569)
    ถ้าผู้ใช้เคยเลือกเดือนอื่นไว้ ระบบจะคืนค่าเดิมจาก localStorage */
@@ -1837,7 +1837,7 @@ var state = {
     hosp: "โรงพยาบาลนราธิวาสราชนครินทร์"
   },
   gas: {
-    url: "",        // URL เว็บแอป Google Apps Script (ถ้าว่าง ใช้ DEFAULT_GAS_URL)
+    url: DEFAULT_GAS_URL, // URL เว็บแอป Google Apps Script ของกลุ่มงาน
     tabName: "",    // ชื่อแท็บในชีต (ว่าง = ใช้ชื่อผู้บันทึก)
     secret: "",     // รหัสผ่านถ้าผู้ดูแลตั้ง OPTIONAL_SECRET ไว้
     autoSync: true  // Auto Save to Sheet — ส่งขึ้นชีตเองหลังแก้ไขข้อมูล (เปิดเป็นค่าเริ่มต้น)
@@ -1865,8 +1865,6 @@ function loadStorage() {
         // ให้ใช้ค่าเริ่มต้นล่าสุด = เปิดซิงก์อัตโนมัติ
         if (parsed.gasAutoChosen !== true) state.gas.autoSync = true;
         state.gasAutoChosen = parsed.gasAutoChosen === true;
-        // URL ค่าเริ่มต้นของกลุ่มงาน — ใช้เมื่อเครื่องนี้ยังไม่เคยกรอกเอง
-        if (!state.gas.url && DEFAULT_GAS_URL) state.gas.url = DEFAULT_GAS_URL.trim();
       }
     }
     // อ่านการตั้งค่า GAS แยกอีกคีย์ (เพื่อความทนทาน)
@@ -1877,6 +1875,9 @@ function loadStorage() {
         state.gas = Object.assign(state.gas, gasParsed);
       }
     }
+    // URL ค่าเริ่มต้นของกลุ่มงาน — ใช้เมื่อเครื่องนี้ยังไม่เคยตั้ง URL เอง
+    // (อยู่หลังการอ่านทั้งสองคีย์ และอยู่นอก if(raw) เพื่อให้เครื่องใหม่ที่ยังว่างได้ค่านี้ด้วย)
+    if (!state.gas.url && DEFAULT_GAS_URL) state.gas.url = DEFAULT_GAS_URL.trim();
   } catch (e) {
     console.warn("อ่านข้อมูลที่บันทึกไว้ไม่ได้:", e);
   }
