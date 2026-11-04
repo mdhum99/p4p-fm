@@ -1539,8 +1539,8 @@ details.sync-instructions[open] summary {
   </div>
 
   <p class="storage-note" id="storageNote">
-    ข้อมูลบันทึกอัตโนมัติในเบราว์เซอร์ของเครื่องนี้ — ซิงก์เข้า Google Sheet ของกลุ่มงานอัตโนมัติ (Auto Save to Sheet)
-    เมื่อเปิดสวิตช์ "ซิงก์อัตโนมัติ" ในแท็บส่งออกข้อมูล
+    ข้อมูลบันทึกอัตโนมัติในเบราว์เซอร์ของเครื่องนี้ — และซิงก์ขึ้น Google Sheet ของกลุ่มงานให้เองอัตโนมัติ (Auto Save to Sheet, เปิดใช้เป็นค่าเริ่มต้น)
+    ปิด/เปิดใหม่ได้ที่สวิตช์ "ซิงก์อัตโนมัติ" ในแท็บส่งออกข้อมูล
   </p>
 
 </div>
@@ -1816,6 +1816,11 @@ var CATEGORY_NAMES = {
 var STORAGE_KEY = "p4p_fm_app_v1";
 var GAS_CONFIG_KEY = "p4p_fm_gas_v1";
 
+/* URL เว็บแอป Google Apps Script ของกลุ่มงาน —
+   วาง URL ที่ลงท้ายด้วย /exec ที่นี่ครั้งเดียว ผู้ใช้ทุกคนจะได้ค่าเริ่มต้นนี้อัตโนมัติ
+   ผู้ใช้ยังแก้เป็น URL อื่นของตัวเองในแท็บส่งออกข้อมูลได้ (ค่าที่ตั้งเองจะทับค่านี้) */
+var DEFAULT_GAS_URL = "";
+
 /* เริ่มต้นที่เดือนเดียวกับ Google Sheet ต้นแบบ (กุมภาพันธ์ 2569)
    ถ้าผู้ใช้เคยเลือกเดือนอื่นไว้ ระบบจะคืนค่าเดิมจาก localStorage */
 var DEFAULT_MONTH = 2;
@@ -1832,11 +1837,12 @@ var state = {
     hosp: "โรงพยาบาลนราธิวาสราชนครินทร์"
   },
   gas: {
-    url: "",        // URL เว็บแอป Google Apps Script
+    url: "",        // URL เว็บแอป Google Apps Script (ถ้าว่าง ใช้ DEFAULT_GAS_URL)
     tabName: "",    // ชื่อแท็บในชีต (ว่าง = ใช้ชื่อผู้บันทึก)
     secret: "",     // รหัสผ่านถ้าผู้ดูแลตั้ง OPTIONAL_SECRET ไว้
-    autoSync: false // Auto Save to Sheet — ส่งขึ้นชีตเองหลังแก้ไขข้อมูล
+    autoSync: true  // Auto Save to Sheet — ส่งขึ้นชีตเองหลังแก้ไขข้อมูล (เปิดเป็นค่าเริ่มต้น)
   },
+  gasAutoChosen: false, // ผู้ใช้เคยกดสวิตช์ซิงก์อัตโนมัติเองหรือยัง
   lastSync: null,   // { tab, month, year, pts, at } ข้อมูลที่ซิงก์สำเร็จล่าสุด
   store: {}   // store["2569_2"][actId][day] = qty
 };
@@ -1855,6 +1861,12 @@ function loadStorage() {
         if (parsed.currentYear) state.currentYear = parsed.currentYear;
         if (parsed.gas) state.gas = Object.assign(state.gas, parsed.gas);
         if (parsed.lastSync) state.lastSync = parsed.lastSync;
+        // ถ้าผู้ใช้ยังไม่เคยกดสวิตช์เลือกเอง (gasAutoChosen ไม่ใช่ true)
+        // ให้ใช้ค่าเริ่มต้นล่าสุด = เปิดซิงก์อัตโนมัติ
+        if (parsed.gasAutoChosen !== true) state.gas.autoSync = true;
+        state.gasAutoChosen = parsed.gasAutoChosen === true;
+        // URL ค่าเริ่มต้นของกลุ่มงาน — ใช้เมื่อเครื่องนี้ยังไม่เคยกรอกเอง
+        if (!state.gas.url && DEFAULT_GAS_URL) state.gas.url = DEFAULT_GAS_URL.trim();
       }
     }
     // อ่านการตั้งค่า GAS แยกอีกคีย์ (เพื่อความทนทาน)
@@ -1872,14 +1884,16 @@ function loadStorage() {
 
 function saveStorage() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    var payload = {
       store: state.store,
       doctor: state.doctor,
       currentMonth: state.currentMonth,
       currentYear: state.currentYear,
       gas: state.gas,
-      lastSync: state.lastSync
-    }));
+      lastSync: state.lastSync,
+      gasAutoChosen: state.gasAutoChosen === true
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     localStorage.setItem(GAS_CONFIG_KEY, JSON.stringify(state.gas));
   } catch (e) {
     console.warn("บันทึกข้อมูลไม่สำเร็จ:", e);
@@ -2613,6 +2627,11 @@ function effectiveTabName() {
   return (state.gas.tabName || state.doctor.name || "").trim();
 }
 
+/* true เมื่อตั้งค่า URL เว็บแอป GAS ถูกรูปแบบแล้ว — ใช้กันป้าย/ตัวจับเวลาซิงก์ทำงานทั้งที่ยังไม่มี URL */
+function gasUrlConfigured() {
+  return /^https:\/\/script\.google\.com\/macros\/s\/.+\/(exec|dev)$/.test((state.gas.url || "").trim());
+}
+
 /* 19 rows × 31 cols of numbers, "" when zero — same shape as the G6:AK24 paste */
 function generateMatrixArray() {
   var out = [];
@@ -2662,9 +2681,11 @@ function setGasStatus(html, cls) {
 
 function readGasInputs() {
   state.gas.url = document.getElementById("inputGasUrl").value.trim();
+  if (!state.gas.url && DEFAULT_GAS_URL) state.gas.url = DEFAULT_GAS_URL.trim();
   state.gas.tabName = document.getElementById("inputSheetTabName").value.trim();
   state.gas.secret = document.getElementById("inputGasSecret").value;
   saveStorage();
+  syncBadgeIdle(); // ตั้ง URL เสร็จ ป้ายซิงก์ปรากฏทันที
 }
 
 function fillGasInputs() {
@@ -2739,7 +2760,7 @@ function matrixSignature() {
 function setSyncBadge(cls, text, title) {
   var el = document.getElementById("autoSyncBadge");
   if (!el) return;
-  if (!state.gas.autoSync) { el.hidden = true; return; }
+  if (!state.gas.autoSync || !text) { el.hidden = true; return; }
   el.hidden = false;
   el.className = "sync-badge" + (cls ? " " + cls : "");
   el.textContent = text;
@@ -2747,7 +2768,7 @@ function setSyncBadge(cls, text, title) {
 }
 
 function syncBadgeIdle() {
-  if (!state.gas.autoSync) { setSyncBadge("", ""); return; }
+  if (!state.gas.autoSync || !gasUrlConfigured()) { setSyncBadge("", ""); return; }
   if (state.lastSync) {
     setSyncBadge("badge-ok", "✓ " + state.lastSync.localTime,
       "ซิงก์อัตโนมัติเปิดอยู่ — ส่งขึ้นชีตล่าสุด " +
@@ -2764,6 +2785,7 @@ function localTimeNow() {
 /* เรียกจากทุกที่ที่ข้อมูลเดือนเปลี่ยน (setDayValue / นำเข้าข้อมูลสำรอง) */
 function scheduleAutoSync() {
   if (!state.gas.autoSync) return;
+  if (!gasUrlConfigured()) return; // ยังไม่ได้ตั้ง URL ไม่ต้องตั้งเวลารอส่ง
   syncBadgeIdle();
   setSyncBadge("badge-pending", "⟳ รอส่ง…", "กำลังรอส่งขึ้นชีต…");
   clearTimeout(autoSyncTimer);
@@ -2926,6 +2948,7 @@ function setupGasActions() {
 
   document.getElementById("autoSyncToggle").addEventListener("change", function (e) {
     state.gas.autoSync = !!e.target.checked;
+    state.gasAutoChosen = true; // ผู้ใช้เลือกเอง — ค่านี้จะไม่ถูกค่าเริ่มต้นทับอีก
     saveStorage();
     clearTimeout(autoSyncRetryTimer);
     autoSyncRetryTimer = null;
