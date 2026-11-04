@@ -927,6 +927,19 @@ td.day-col.past-month {
 .icon-sheet { background: var(--sheet); }
 .icon-csv { background: #0284c7; }
 .icon-backup { background: #7c3aed; }
+.icon-gas { background: linear-gradient(135deg, var(--sheet) 0%, #0d9488 100%); }
+
+.gas-status-ok { color: var(--sheet); font-weight: 600; }
+.gas-status-err { color: var(--danger); font-weight: 600; }
+
+details.sync-instructions summary {
+  cursor: pointer;
+  font-weight: 600;
+  user-select: none;
+}
+details.sync-instructions[open] summary {
+  margin-bottom: 8px;
+}
 
 .sync-card-body h3 {
   font-size: 16px;
@@ -1165,6 +1178,10 @@ td.day-col.past-month {
         <span id="docNameDisplay">นพ.ฮัมดี หะยีอาลี</span>
         <small>(แก้ไข)</small>
       </button>
+
+      <button class="btn btn-sheet btn-sm" id="headerSaveSheetBtn" title="ส่งข้อมูลเดือนนี้เข้า Google Sheet ทันที">
+        <span id="headerSaveBtnText">☁️ บันทึกเข้าชีต</span>
+      </button>
     </div>
   </header>
 
@@ -1341,6 +1358,66 @@ td.day-col.past-month {
   <div class="view-panel" id="view-sync">
     <div class="sync-container">
 
+      <div class="sync-card" style="grid-column: 1 / -1;">
+        <div>
+          <div class="sync-card-header">
+            <div class="sync-icon icon-gas">GAS</div>
+            <div class="sync-card-body">
+              <h3>บันทึกอัตโนมัติเข้า Google Sheet (1 คลิก)</h3>
+              <p>
+                กรอก URL เว็บแอป Google Apps Script ที่ผู้ดูแลกลุ่มงานตั้งไว้ครั้งเดียว
+                จากนั้นกดปุ่ม <strong>"บันทึกเข้าชีต"</strong> ที่มุมขวาบนได้ทุกเมื่อ —
+                ระบบจะสร้างแท็บให้อัตโนมัติถ้ายังไม่มี และเขียนข้อมูลลง G6:AK24 ตรงจุด
+              </p>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin-top:16px;">
+            <div class="form-group" style="margin:0;">
+              <label for="inputGasUrl">URL เว็บแอป Google Apps Script</label>
+              <input type="url" class="form-input" id="inputGasUrl"
+                     placeholder="https://script.google.com/macros/s/..../exec">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label for="inputSheetTabName">ชื่อแท็บในชีตของฉัน</label>
+              <input type="text" class="form-input" id="inputSheetTabName"
+                     placeholder="เช่น นพ.ฮัมดี">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label for="inputGasSecret">รหัสผ่าน (ถ้าผู้ดูแลตั้งไว้)</label>
+              <input type="password" class="form-input" id="inputGasSecret"
+                     placeholder="เว้นว่างได้ถ้าไม่ได้ตั้ง">
+            </div>
+          </div>
+
+          <div id="gasStatusLine" style="margin-top:12px; font-size:13px; color:var(--fg-muted);">
+            สถานะ: ยังไม่ได้ตรวจสอบการเชื่อมต่อ
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-subtle" id="testGasBtn">ทดสอบการเชื่อมต่อ</button>
+          <button class="btn btn-sheet" id="saveGasBtn" style="flex:1; min-width:220px;">บันทึกข้อมูลเดือนนี้เข้าชีตทันที</button>
+        </div>
+
+        <details class="sync-instructions">
+          <summary>วิธีติดตั้ง Google Apps Script (ผู้ดูแลกลุ่มงานทำครั้งเดียว ใช้ได้ทั้งทีม)</summary>
+          <ol>
+            <li>เปิด Google Sheet "P4P Family Medicine 2569" → เมนู <strong>ส่วนขยาย (Extensions)</strong> → <strong>Apps Script</strong></li>
+            <li>ลบโค้ดเดิมในหน้าต่าง Apps Script แล้วกดปุ่ม <strong>"คัดลอกโค้ด Google Apps Script"</strong> ด้านล่าง ไปวางทับ แล้วกดบันทึก (<strong>Ctrl+S</strong> / <strong>Cmd+S</strong>)</li>
+            <li>กด <strong>ทำให้ใช้งานได้ (Deploy)</strong> → <strong>การทำให้ใช้งานได้รายการใหม่ (New deployment)</strong></li>
+            <li>ไอคอนเฟือง → เลือกประเภท <strong>"เว็บแอป (Web app)"</strong></li>
+            <li>ดำเนินการในฐานะ: <strong>ฉัน</strong> — ใครมีสิทธิ์เข้าถึง: <strong>"ทุกคน"</strong> (จำเป็น มิฉะนั้นคนอื่นใช้ไม่ได้)</li>
+            <li>กด <strong>ทำให้ใช้งานได้</strong> → คัดลอก <strong>URL เว็บแอป</strong> ที่ลงท้ายด้วย <code>/exec</code> มาวางในช่อง URL ด้านบน</li>
+          </ol>
+          <p style="margin-top:6px;">
+            รหัสไฟล์ชีต: <code>1GLvhWVQj174VaZXpHuOSZ3xH2N_efk69UKlrubg0WTk</code><br>
+            เมื่อแก้ไข Code.gs ภายหลัง ต้องกด <strong>ทำให้ใช้งานได้ → จัดการการทำให้ใช้งานได้</strong> แล้วแก้ไขเวอร์ชัน เป็นเวอร์ชันใหม่
+          </p>
+          <button class="btn btn-subtle btn-sm" id="copyGasCodeBtn" style="margin-top:8px;">คัดลอกโค้ด Google Apps Script</button>
+        </details>
+      </div>
+
       <div class="sync-card">
         <div>
           <div class="sync-card-header">
@@ -1434,8 +1511,8 @@ td.day-col.past-month {
   </div>
 
   <p class="storage-note">
-    ข้อมูลบันทึกอัตโนมัติในเบราว์เซอร์ของเครื่องนี้ (ไม่มีการส่งออกไปเซิร์ฟเวอร์อื่น) —
-    ใช้แท็บ "ส่งออกข้อมูล" เพื่อสำรองหรือคัดลอกลง Google Sheet
+    ข้อมูลบันทึกอัตโนมัติในเบราว์เซอร์ของเครื่องนี้ — ส่งออกไปยัง Google Sheet ของกลุ่มงาน
+    เฉพาะเมื่อกดปุ่ม "บันทึกเข้าชีต" เท่านั้น
   </p>
 
 </div>
@@ -1476,6 +1553,194 @@ td.day-col.past-month {
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
+
+<script type="text/plain" id="gasCodeSource">
+/**
+ * =====================================================================
+ *  P4P Family Medicine — Google Apps Script Bridge
+ *  เชื่อมเว็บแอป https://mdhum99.github.io/p4p-fm/ เข้ากับ Google Sheet
+ *  "P4P Family Medicine 2569" (1 คน = 1 แท็บ)
+ *
+ *  การติดตั้ง (ผู้ดูแลทำครั้งเดียว ~3 นาที):
+ *    1. เปิด Google Sheet กลาง → เมนู "ส่วนขยาย" → "Apps Script"
+ *    2. ลบโค้ดเดิมทั้งหมด แล้ววางโค้ดนี้ทับ กดบันทึก (Ctrl+S)
+ *    3. กด "ทำให้ใช้งานได้" → "การทำให้ใช้งานได้รายการใหม่" →
+ *       ไอคอนเฟือง เลือกประเภท "เว็บแอป"
+ *    4. ดำเนินการในฐานะ: ฉัน | ใครมีสิทธิ์เข้าถึง: "ทุกคน"  ← สำคัญ ต้องเป็น "ทุกคน"
+ *    5. กด "ทำให้ใช้งานได้" แล้วคัดลอก "URL เว็บแอป"
+ *       (https://script.google.com/macros/s/..../exec) ไปกรอกในเว็บแอป
+ * =====================================================================
+ */
+
+// ====== ค่าตั้งต้น ======
+var SPREADSHEET_ID = "1GLvhWVQj174VaZXpHuOSZ3xH2N_efk69UKlrubg0WTk"; // ใช้เมื่อรันเป็น standalone script
+var TEMPLATE_TAB = "Sheet1";   // แท็บต้นแบบ (19 กิจกรรม พร้อมสูตร)
+var OPTIONAL_SECRET = "";      // ถ้าตั้งค่าไม่ว่าง เว็บแอปต้องกรอกรหัสนี้จึงบันทึกได้ (แนะนำให้ตั้ง)
+
+var FIRST_ROW = 6, ROW_COUNT = 19;   // G6:AK24
+var FIRST_COL = 7, COL_COUNT = 31;
+
+var THAI_MONTHS = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+  "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+function getSpreadsheet() {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (ss) return ss;
+  } catch (err) { /* รันแบบ standalone ไปต่อด้วย openById */ }
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
+}
+
+function createJsonResponse(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/** GET — ทดสอบการเชื่อมต่อ / ดูรายชื่อแท็บ */
+function doGet(e) {
+  try {
+    var secret = (e && e.parameter && e.parameter.secret) || "";
+    if (OPTIONAL_SECRET !== "" && secret !== OPTIONAL_SECRET) {
+      return createJsonResponse({ status: "error", message: "รหัสผ่านไม่ถูกต้อง" });
+    }
+    var ss = getSpreadsheet();
+    return createJsonResponse({
+      status: "ok",
+      spreadsheetName: ss.getName(),
+      tabs: ss.getSheets().map(function (s) { return s.getName(); }),
+      templateExists: !!ss.getSheetByName(TEMPLATE_TAB),
+      secretRequired: OPTIONAL_SECRET !== "",
+      serverTime: new Date().toISOString()
+    });
+  } catch (err) {
+    return createJsonResponse({ status: "error", message: "เกิดข้อผิดพลาด: " + err });
+  }
+}
+
+/** POST — จุดเข้าหลักของเว็บแอป */
+function doPost(e) {
+  try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return createJsonResponse({ status: "error", message: "ไม่พบข้อมูลที่ส่งมา (postData)" });
+    }
+    var data = JSON.parse(e.postData.contents);
+
+    if (OPTIONAL_SECRET !== "" && data.secret !== OPTIONAL_SECRET) {
+      return createJsonResponse({ status: "error", message: "รหัสผ่านไม่ถูกต้อง" });
+    }
+
+    var action = data.action || "save";
+    if (action === "test") return doGet(e);
+    if (action === "save") return handleSaveP4P(data);
+    return createJsonResponse({ status: "error", message: "ไม่รู้จักคำสั่ง: " + action });
+  } catch (err) {
+    return createJsonResponse({ status: "error", message: "เกิดข้อผิดพลาดในการประมวลผล: " + err });
+  }
+}
+
+/** ทำความสะอาดชื่อแท็บให้เป็นชื่อที่ Google Sheet ยอมรับ */
+function sanitizeTabName(raw) {
+  var name = String(raw || "").replace(/[\\/?*[\]:]/g, " ").replace(/\s+/g, " ").trim();
+  return name.substring(0, 80);
+}
+
+/** บันทึก matrix 19×31 ลงแท็บของผู้ใช้ (สร้างแท็บให้อัตโนมัติถ้ายังไม่มี) */
+function handleSaveP4P(data) {
+  var ss = getSpreadsheet();
+
+  var tabName = sanitizeTabName(data.tabName || (data.doctor && data.doctor.name) || "");
+  if (!tabName) {
+    return createJsonResponse({ status: "error", message: "ไม่พบชื่อแท็บ (tabName)" });
+  }
+
+  var targetSheet = ss.getSheetByName(tabName);
+  var createdNewTab = false;
+
+  if (!targetSheet) {
+    var template = ss.getSheetByName(TEMPLATE_TAB);
+    if (!template) {
+      return createJsonResponse({
+        status: "error",
+        message: "ไม่พบแท็บต้นแบบ '" + TEMPLATE_TAB + "' ในไฟล์ชีต"
+      });
+    }
+    targetSheet = ss.insertSheet(tabName, ss.getNumSheets(), { template: template });
+    createdNewTab = true;
+    targetSheet.getRange(FIRST_ROW, FIRST_COL, ROW_COUNT, COL_COUNT).clearContent();
+  }
+
+  // อัปเดตหัวกระดาษแถว 2 (เดือน/ปี) และแถว 3 (ชื่อ-ตำแหน่ง-กลุ่มงาน)
+  var month = parseInt(data.month, 10);
+  var year = parseInt(data.year, 10);
+  if (month >= 1 && month <= 12 && year > 2400) {
+    targetSheet.getRange("A2").setValue("ประจำเดือน " + THAI_MONTHS[month] + " " + year);
+  }
+  if (data.doctor && data.doctor.name) {
+    var pos = data.doctor.position || "";
+    var dept = data.doctor.dept || "";
+    var line3 = "ชื่อ - สกุล  " + data.doctor.name;
+    if (pos) line3 += "   ตำแหน่ง   " + pos;
+    if (dept) line3 += " กลุ่มงาน " + dept;
+    targetSheet.getRange("A3").setValue(line3);
+  }
+
+  // ตรวจรูปแบบ matrix: 19 แถว × 31 คอลัมน์ ค่าเป็นตัวเลข 0-9999 หรือช่องว่าง
+  var matrix = data.matrix;
+  if (!matrix || !Array.isArray(matrix) || matrix.length !== ROW_COUNT) {
+    return createJsonResponse({
+      status: "error",
+      message: "รูปแบบ matrix ไม่ถูกต้อง (ต้องมี " + ROW_COUNT + " แถว)"
+    });
+  }
+  var values = [];
+  for (var r = 0; r < ROW_COUNT; r++) {
+    var srcRow = matrix[r] || [];
+    if (srcRow.length !== COL_COUNT) {
+      return createJsonResponse({
+        status: "error",
+        message: "รูปแบบ matrix ไม่ถูกต้อง (แถวที่ " + (r + 1) + " ต้องมี " + COL_COUNT + " คอลัมน์)"
+      });
+    }
+    var row = [];
+    for (var c = 0; c < COL_COUNT; c++) {
+      var v = srcRow[c];
+      if (v === "" || v === null || v === undefined) { row.push(""); continue; }
+      var n = Number(v);
+      if (isNaN(n) || n < 0 || n > 9999) {
+        return createJsonResponse({
+          status: "error",
+          message: "ค่าไม่ถูกต้องที่แถว " + (r + 1) + " วันที่ " + (c + 1) + " (ต้องเป็นตัวเลข 0-9999)"
+        });
+      }
+      row.push(n === 0 ? "" : n);
+    }
+    values.push(row);
+  }
+
+  // เขียนทับทั้งช่วง G6:AK24 ในคำสั่งเดียว
+  targetSheet.getRange(FIRST_ROW, FIRST_COL, ROW_COUNT, COL_COUNT).setValues(values);
+
+  // รอสูตรคำนวณ แล้วอ่านผลรวมจากชีตจริง (E = จำนวนรวม, F5 = แต้มรวมทั้งหมด)
+  SpreadsheetApp.flush();
+  var totalPts = Number(targetSheet.getRange("F5").getValue()) || 0;
+  var totalCount = 0;
+  var eValues = targetSheet.getRange("E6:E24").getValues();
+  for (var k = 0; k < eValues.length; k++) totalCount += Number(eValues[k][0]) || 0;
+
+  return createJsonResponse({
+    status: "success",
+    message: createdNewTab
+      ? "สร้างแท็บ '" + tabName + "' และบันทึกข้อมูลเรียบร้อย"
+      : "บันทึกข้อมูลลงแท็บ '" + tabName + "' เรียบร้อย",
+    tabName: tabName,
+    createdNewTab: createdNewTab,
+    month: month, year: year,
+    totalCount: totalCount,
+    totalPts: totalPts,
+    timestamp: new Date().toISOString()
+  });
+}
+</script>
 
 <script>
 /**
@@ -1521,6 +1786,7 @@ var CATEGORY_NAMES = {
 };
 
 var STORAGE_KEY = "p4p_fm_app_v1";
+var GAS_CONFIG_KEY = "p4p_fm_gas_v1";
 
 /* เริ่มต้นที่เดือนเดียวกับ Google Sheet ต้นแบบ (กุมภาพันธ์ 2569)
    ถ้าผู้ใช้เคยเลือกเดือนอื่นไว้ ระบบจะคืนค่าเดิมจาก localStorage */
@@ -1537,6 +1803,11 @@ var state = {
     dept: "กลุ่มงานเวชกรรมสังคม",
     hosp: "โรงพยาบาลนราธิวาสราชนครินทร์"
   },
+  gas: {
+    url: "",        // URL เว็บแอป Google Apps Script
+    tabName: "",    // ชื่อแท็บในชีต (ว่าง = ใช้ชื่อผู้บันทึก)
+    secret: ""      // รหัสผ่านถ้าผู้ดูแลตั้ง OPTIONAL_SECRET ไว้
+  },
   store: {}   // store["2569_2"][actId][day] = qty
 };
 
@@ -1545,13 +1816,23 @@ var state = {
 function loadStorage() {
   try {
     var raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    var parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object") {
-      if (parsed.store) state.store = parsed.store;
-      if (parsed.doctor) state.doctor = Object.assign(state.doctor, parsed.doctor);
-      if (parsed.currentMonth) state.currentMonth = parsed.currentMonth;
-      if (parsed.currentYear) state.currentYear = parsed.currentYear;
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        if (parsed.store) state.store = parsed.store;
+        if (parsed.doctor) state.doctor = Object.assign(state.doctor, parsed.doctor);
+        if (parsed.currentMonth) state.currentMonth = parsed.currentMonth;
+        if (parsed.currentYear) state.currentYear = parsed.currentYear;
+        if (parsed.gas) state.gas = Object.assign(state.gas, parsed.gas);
+      }
+    }
+    // อ่านการตั้งค่า GAS แยกอีกคีย์ (เพื่อความทนทาน)
+    var gasRaw = localStorage.getItem(GAS_CONFIG_KEY);
+    if (gasRaw) {
+      var gasParsed = JSON.parse(gasRaw);
+      if (gasParsed && typeof gasParsed === "object") {
+        state.gas = Object.assign(state.gas, gasParsed);
+      }
     }
   } catch (e) {
     console.warn("อ่านข้อมูลที่บันทึกไว้ไม่ได้:", e);
@@ -1564,8 +1845,10 @@ function saveStorage() {
       store: state.store,
       doctor: state.doctor,
       currentMonth: state.currentMonth,
-      currentYear: state.currentYear
+      currentYear: state.currentYear,
+      gas: state.gas
     }));
+    localStorage.setItem(GAS_CONFIG_KEY, JSON.stringify(state.gas));
   } catch (e) {
     console.warn("บันทึกข้อมูลไม่สำเร็จ:", e);
   }
@@ -1755,6 +2038,7 @@ function init() {
   });
 
   setupSyncActions();
+  setupGasActions();
   renderAll();
 }
 
@@ -1790,6 +2074,10 @@ function setupDoctorModal() {
     state.doctor.position = document.getElementById("inputDocPosition").value.trim();
     state.doctor.dept = document.getElementById("inputDocDept").value.trim();
     state.doctor.hosp = document.getElementById("inputDocHosp").value.trim();
+    if (!state.gas.tabName) {
+      var tabInp = document.getElementById("inputSheetTabName");
+      if (tabInp) tabInp.value = state.doctor.name;
+    }
     saveStorage();
     updateDoctorDisplay();
     closeModal();
@@ -2282,6 +2570,196 @@ function copyToClipboard(text, okMsg) {
   } else {
     fallback();
   }
+}
+
+/* ---------- view 4b: Google Apps Script direct save ---------- */
+
+function effectiveTabName() {
+  return (state.gas.tabName || state.doctor.name || "").trim();
+}
+
+/* 19 rows × 31 cols of numbers, "" when zero — same shape as the G6:AK24 paste */
+function generateMatrixArray() {
+  var out = [];
+  ACTIVITIES.forEach(function (a) {
+    var row = [];
+    for (var d = 1; d <= 31; d++) {
+      var v = getDayValue(a.id, d);
+      row.push(v > 0 ? v : "");
+    }
+    out.push(row);
+  });
+  return out;
+}
+
+/* POST แบบ text/plain เพื่อเลี่ยง CORS preflight (Apps Script ไม่รับ OPTIONS) */
+function gasRequest(url, payload) {
+  return fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
+    redirect: "follow"
+  }).then(function (res) {
+    if (!res.ok) throw new Error("HTTP " + res.status + " " + res.statusText);
+    return res.text();
+  }).then(function (text) {
+    var data;
+    try { data = JSON.parse(text); }
+    catch (err) {
+      throw new Error("ตอบกลับไม่ใช่ JSON: " + text.substring(0, 120));
+    }
+    if (data.status !== "success" && data.status !== "ok") {
+      throw new Error(data.message || "ไม่ทราบสาเหตุ");
+    }
+    return data;
+  });
+}
+
+function setGasStatus(html, cls) {
+  var el = document.getElementById("gasStatusLine");
+  if (!el) return;
+  el.className = cls || "";
+  el.innerHTML = html;
+}
+
+function readGasInputs() {
+  state.gas.url = document.getElementById("inputGasUrl").value.trim();
+  state.gas.tabName = document.getElementById("inputSheetTabName").value.trim();
+  state.gas.secret = document.getElementById("inputGasSecret").value;
+  saveStorage();
+}
+
+function fillGasInputs() {
+  document.getElementById("inputGasUrl").value = state.gas.url || "";
+  document.getElementById("inputSheetTabName").value =
+    state.gas.tabName || state.doctor.name || "";
+  document.getElementById("inputGasSecret").value = state.gas.secret || "";
+}
+
+function testGasConnection() {
+  readGasInputs();
+  if (!state.gas.url) {
+    setGasStatus("กรุณากรอก URL เว็บแอป Google Apps Script ก่อน", "gas-status-err");
+    showToast("ยังไม่ได้กรอก URL ของ Google Apps Script");
+    return;
+  }
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/(exec|dev)$/.test(state.gas.url)) {
+    setGasStatus("URL ดูไม่ถูกต้อง — ต้องขึ้นต้นด้วย https://script.google.com/macros/s/ และลงท้ายด้วย /exec", "gas-status-err");
+    showToast("รูปแบบ URL ไม่ถูกต้อง");
+    return;
+  }
+
+  setGasStatus("กำลังทดสอบการเชื่อมต่อ…");
+  var btn = document.getElementById("testGasBtn");
+  btn.disabled = true;
+
+  gasRequest(state.gas.url, { action: "test", secret: state.gas.secret })
+    .then(function (data) {
+      var tabs = (data.tabs || []).join(", ");
+      setGasStatus(
+        '<span class="gas-status-ok">เชื่อมต่อสำเร็จ</span> — ไฟล์: <strong>' +
+        escapeHtml(data.spreadsheetName || "(ไม่ทราบชื่อ)") + "</strong><br>" +
+        "แท็บที่มีอยู่ (" + (data.tabs || []).length + "): " + escapeHtml(tabs || "-") +
+        (data.templateExists ? "" : ' <span class="gas-status-err">ไม่พบแท็บต้นแบบ Sheet1</span>') +
+        (data.secretRequired ? "<br>ไฟล์นี้กำหนดรหัสผ่านไว้ — ต้องกรอกรหัสให้ตรง" : ""),
+        ""
+      );
+      showToast("เชื่อมต่อ Google Sheet สำเร็จ");
+    })
+    .catch(function (err) {
+      setGasStatus(
+        '<span class="gas-status-err">เชื่อมต่อไม่สำเร็จ</span> — ' + escapeHtml(err.message) +
+        "<br><small>ตรวจสอบว่า Deploy เป็นเว็บแอปและตั้งสิทธิ์เข้าถึงเป็น \"ทุกคน\" แล้ว</small>",
+        ""
+      );
+      showToast("เชื่อมต่อไม่สำเร็จ: " + err.message);
+    })
+    .then(function () { btn.disabled = false; });
+}
+
+function saveToSheet(triggerBtn) {
+  readGasInputs();
+  if (!state.gas.url) {
+    setGasStatus("ยังไม่มี URL — เปิดแท็บ \"ส่งออกข้อมูล\" เพื่อตั้งค่าการเชื่อมต่อ", "gas-status-err");
+    showToast("ยังไม่ได้ตั้งค่า Google Apps Script — ดูวิธีตั้งค่าในแท็บ ส่งออกข้อมูล");
+    return;
+  }
+
+  var tabName = effectiveTabName();
+  if (!tabName) {
+    showToast("กรุณากรอกชื่อแท็บในชีตก่อนบันทึก");
+    return;
+  }
+
+  var btn = triggerBtn || document.getElementById("saveGasBtn");
+  var label = document.getElementById("headerSaveBtnText");
+  var oldLabel = label ? label.textContent : "";
+  btn.disabled = true;
+  if (label) label.textContent = "⏳ กำลังบันทึก…";
+  setGasStatus("กำลังส่งข้อมูล " + ROW_COUNT_LABEL + " เข้าแท็บ \"" + tabName + "\"…");
+
+  var payload = {
+    action: "save",
+    secret: state.gas.secret,
+    tabName: tabName,
+    month: state.currentMonth,
+    year: state.currentYear,
+    doctor: state.doctor,
+    matrix: generateMatrixArray()
+  };
+
+  gasRequest(state.gas.url, payload)
+    .then(function (data) {
+      var pts = fmtNum(data.totalPts || 0);
+      setGasStatus(
+        '<span class="gas-status-ok">บันทึกล่าสุดสำเร็จ</span> — แท็บ <strong>' +
+        escapeHtml(data.tabName) + "</strong> · แต้มรวมในชีต <strong>" + pts + "</strong> · " +
+        fmtNum(data.totalCount || 0, 0) + " ผลงาน" +
+        (data.createdNewTab ? " · สร้างแท็บใหม่ให้อัตโนมัติ" : "") +
+        '<br><small>เวลา: ' + escapeHtml(String(data.timestamp || "").replace("T", " ").substring(0, 19)) + " UTC</small>",
+        ""
+      );
+      showToast("บันทึกเข้าชีตแท็บ \"" + data.tabName + "\" สำเร็จ — " + pts + " แต้ม");
+    })
+    .catch(function (err) {
+      setGasStatus('<span class="gas-status-err">บันทึกไม่สำเร็จ</span> — ' + escapeHtml(err.message), "");
+      showToast("บันทึกไม่สำเร็จ: " + err.message);
+    })
+    .then(function () {
+      btn.disabled = false;
+      if (label) label.textContent = oldLabel;
+    });
+}
+
+function escapeHtml(s) {
+  return String(s === undefined || s === null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+var ROW_COUNT_LABEL = "19 กิจกรรม × 31 วัน";
+
+function setupGasActions() {
+  fillGasInputs();
+
+  document.getElementById("testGasBtn").addEventListener("click", testGasConnection);
+  document.getElementById("saveGasBtn").addEventListener("click", function () {
+    saveToSheet(document.getElementById("saveGasBtn"));
+  });
+  document.getElementById("headerSaveSheetBtn").addEventListener("click", function () {
+    saveToSheet(document.getElementById("headerSaveSheetBtn"));
+  });
+
+  ["inputGasUrl", "inputSheetTabName", "inputGasSecret"].forEach(function (id) {
+    document.getElementById(id).addEventListener("change", readGasInputs);
+  });
+
+  document.getElementById("copyGasCodeBtn").addEventListener("click", function () {
+    var src = document.getElementById("gasCodeSource");
+    if (!src) { showToast("ไม่พบโค้ด Apps Script ในหน้านี้"); return; }
+    copyToClipboard(src.textContent.trim(),
+      "คัดลอกโค้ด Apps Script แล้ว — วางในหน้าต่าง Apps Script ของชีต");
+  });
 }
 
 function setupSyncActions() {
