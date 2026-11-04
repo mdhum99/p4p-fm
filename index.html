@@ -1114,6 +1114,15 @@ td.day-col.past-month {
   font-size: 13px;
 }
 
+/* ป้ายชื่อหมวด A–F ในกราฟสรุป: กว้างพอให้ชื่อหมวดยาว (เช่น E) อยู่บนบรรทัดเดียว */
+.cat-breakdown-label {
+  flex: 0 0 200px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .rank-bar-wrap {
   flex: 1;
   min-width: 0;
@@ -3397,7 +3406,7 @@ function renderCategoryBreakdown() {
     var el = document.createElement("div");
     el.className = "ranking-item";
     el.innerHTML =
-      '<div style="width:170px; font-weight:600; font-size:12px;">' + CATEGORY_NAMES[cat] + "</div>" +
+      '<div class="cat-breakdown-label" style="font-weight:600; font-size:12px;">' + CATEGORY_NAMES[cat] + "</div>" +
       '<div class="rank-bar-wrap">' +
         '<div style="display:flex; justify-content:space-between; font-size:11px; color:var(--fg-muted);">' +
           "<span>" + fmtNum(catCount[cat] || 0, 0) + " ครั้ง</span>" +
