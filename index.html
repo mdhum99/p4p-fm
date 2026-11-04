@@ -1,0 +1,2350 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบบันทึก P4P เวชกรรมสังคม</title>
+<link rel="icon" href="data:,">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+/* Design Plan:
+ * Palette: Clinical Teal & Slate - emerald-teal primary on cool slate neutrals, semantic colors kept separate from accent
+ * Typography: Sarabun (Thai official document standard) for UI, JetBrains Mono with tabular-nums for all figures
+ * Layout: four working views - quick daily entry with calendar, full 31-day matrix mirroring the sheet,
+ *         analytics (trend + rankings), and a clipboard-based Google Sheets sync
+ */
+:root {
+  --bg: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --bg-input: #ffffff;
+  --fg: #0f172a;
+  --fg-muted: #475569;
+  --fg-subtle: #64748b;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --primary: #0f766e;
+  --primary-hover: #115e59;
+  --primary-light: #ccfbf1;
+  --primary-text: #042f2e;
+  --accent: #2563eb;
+  --accent-light: #dbeafe;
+  --accent-text: #1e40af;
+  --sheet: #107c41;
+  --sheet-hover: #0b5c30;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+  --font-main: 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #090d16;
+    --bg-card: #111827;
+    --bg-subtle: #1f2937;
+    --bg-input: #172033;
+    --fg: #f3f4f6;
+    --fg-muted: #9ca3af;
+    --fg-subtle: #6b7280;
+    --border: #2d3748;
+    --border-strong: #4b5563;
+    --primary: #14b8a6;
+    --primary-hover: #2dd4bf;
+    --primary-light: #042f2e;
+    --primary-text: #ccfbf1;
+    --accent: #3b82f6;
+    --accent-light: #1e293b;
+    --accent-text: #93c5fd;
+    --sheet: #16a34a;
+    --sheet-hover: #22c55e;
+    --danger: #ef4444;
+    --danger-light: #450a0a;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #090d16;
+  --bg-card: #111827;
+  --bg-subtle: #1f2937;
+  --bg-input: #172033;
+  --fg: #f3f4f6;
+  --fg-muted: #9ca3af;
+  --fg-subtle: #6b7280;
+  --border: #2d3748;
+  --border-strong: #4b5563;
+  --primary: #14b8a6;
+  --primary-hover: #2dd4bf;
+  --primary-light: #042f2e;
+  --primary-text: #ccfbf1;
+  --accent: #3b82f6;
+  --accent-light: #1e293b;
+  --accent-text: #93c5fd;
+  --sheet: #16a34a;
+  --sheet-hover: #22c55e;
+  --danger: #ef4444;
+  --danger-light: #450a0a;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+[hidden] { display: none !important; }
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg);
+  color: var(--fg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(32px, env(safe-area-inset-bottom, 0px));
+  min-height: 100vh;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+button {
+  font-family: var(--font-main);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* App Container */
+.app-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-block: 16px;
+}
+
+/* Header */
+.app-header {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--primary) 0%, #0284c7 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.brand-info h1 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--fg);
+  line-height: 1.25;
+}
+
+.brand-info p {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.month-selector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-subtle);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.month-selector label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.month-selector select {
+  font-family: var(--font-main);
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.doctor-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  background: var(--primary-light);
+  color: var(--primary-text);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.doctor-chip:hover {
+  background: var(--bg-subtle);
+}
+
+.doctor-chip small {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+/* KPI Cards */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--primary);
+}
+
+.kpi-card.k-accent::after { background: var(--accent); }
+.kpi-card.k-sheet::after { background: var(--sheet); }
+.kpi-card.k-warn::after { background: #d97706; }
+
+.kpi-label {
+  font-size: 13px;
+  color: var(--fg-muted);
+  font-weight: 500;
+}
+
+.kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--fg);
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.kpi-sub {
+  font-size: 11px;
+  color: var(--fg-subtle);
+  margin-top: 2px;
+}
+
+/* Nav Tabs */
+.tabs-nav {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-card);
+  padding: 6px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease-in-out;
+}
+
+.tab-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--fg);
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+/* Views */
+.view-panel { display: none; }
+.view-panel.active { display: block; }
+
+/* ============ VIEW 1: DAILY QUICK LOG ============ */
+.daily-container {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .daily-container { grid-template-columns: 1fr; }
+}
+
+.calendar-sidebar {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  height: fit-content;
+}
+
+.date-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.date-header strong {
+  font-size: 15px;
+}
+
+.date-nav-btn {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  transition: background 0.15s;
+}
+
+.date-nav-btn:hover {
+  background: var(--border);
+}
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.day-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  border: 1px solid transparent;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.12s;
+  padding: 2px;
+  color: var(--fg);
+  font-family: var(--font-main);
+}
+
+.day-cell:hover {
+  border-color: var(--primary);
+}
+
+.day-cell.selected {
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.day-cell.has-data::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
+.day-cell.selected.has-data::after {
+  background: #ffffff;
+}
+
+.day-num {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.day-score-pill {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--fg-subtle);
+  margin-top: 2px;
+}
+
+.day-cell.selected .day-score-pill {
+  color: var(--primary-light);
+}
+
+.day-summary-box {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.day-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.day-summary-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.daily-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.daily-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.selected-day-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.selected-day-heading h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.selected-day-heading span {
+  color: var(--fg-muted);
+  font-size: 14px;
+}
+
+.activity-filter-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-tag {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--bg-subtle);
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-tag.active {
+  background: var(--primary-light);
+  color: var(--primary-text);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+.activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activity-card {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  gap: 12px;
+  transition: border-color 0.15s;
+}
+
+.activity-card.active-input {
+  background: var(--bg-card);
+  border-color: var(--primary);
+}
+
+.activity-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.activity-meta {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pts-badge {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.activity-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.step-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  color: var(--fg);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: all 0.1s;
+  min-width: 34px;
+}
+
+.step-btn:hover {
+  background: var(--primary-light);
+  color: var(--primary-text);
+  border-color: var(--primary);
+}
+
+.activity-input {
+  width: 62px;
+  height: 36px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-input);
+  color: var(--fg);
+}
+
+.activity-input:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.item-day-total {
+  min-width: 76px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.item-day-total small {
+  display: block;
+  font-size: 10px;
+  color: var(--fg-subtle);
+  font-weight: 400;
+}
+
+/* ============ VIEW 2: 31-DAY MATRIX ============ */
+.matrix-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.matrix-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.matrix-toolbar h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.matrix-toolbar p {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+.matrix-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.table-scroll-container {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  max-height: 70vh;
+}
+
+.p4p-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12.5px;
+}
+
+.p4p-table th,
+.p4p-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.p4p-table thead th {
+  background: var(--bg-subtle);
+  color: var(--fg);
+  font-weight: 700;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.p4p-table tbody tr:hover {
+  background: var(--bg-subtle);
+}
+
+.p4p-table tbody tr.row-total {
+  background: var(--bg-subtle);
+  font-weight: 700;
+}
+
+.col-sticky-1 {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  background: var(--bg-card);
+  text-align: center;
+  width: 36px;
+}
+
+.col-sticky-2 {
+  position: sticky;
+  left: 36px;
+  z-index: 5;
+  background: var(--bg-card);
+  min-width: 220px;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.p4p-table tbody tr:hover .col-sticky-1,
+.p4p-table tbody tr:hover .col-sticky-2 {
+  background: var(--bg-subtle);
+}
+
+.p4p-table thead th.col-sticky-1,
+.p4p-table thead th.col-sticky-2 {
+  z-index: 15;
+  background: var(--bg-subtle);
+}
+
+.col-unit { text-align: center; width: 55px; }
+.col-rate { text-align: right; width: 75px; font-family: var(--font-mono); }
+.col-sum-count { text-align: right; width: 75px; font-family: var(--font-mono); font-weight: 600; background: var(--bg-subtle); }
+.col-sum-pts { text-align: right; width: 85px; font-family: var(--font-mono); font-weight: 700; color: var(--primary-text); background: var(--primary-light); }
+
+.day-col {
+  width: 42px;
+  min-width: 42px;
+  text-align: center;
+  padding: 2px !important;
+}
+
+td.day-col.past-month {
+  opacity: 0.35;
+}
+
+.matrix-input {
+  width: 100%;
+  height: 28px;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--fg);
+  border-radius: 3px;
+}
+
+.matrix-input:focus {
+  background: var(--primary-light);
+  color: var(--primary-text);
+  font-weight: 700;
+  outline: 1px solid var(--primary);
+}
+
+.matrix-input.has-val {
+  font-weight: 600;
+  background: var(--accent-light);
+  color: var(--accent-text);
+}
+
+/* ============ VIEW 3: STATS ============ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+.card-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.card-title .sub {
+  font-size: 12px;
+  color: var(--fg-muted);
+  font-weight: 400;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.rank-bar-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rank-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.rank-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, #0284c7 100%);
+  border-radius: var(--radius-full);
+}
+
+.chart-container {
+  width: 100%;
+  height: 240px;
+  margin-top: 10px;
+}
+
+/* ============ VIEW 4: SYNC ============ */
+.sync-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.sync-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sync-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.sync-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.icon-sheet { background: var(--sheet); }
+.icon-csv { background: #0284c7; }
+.icon-backup { background: #7c3aed; }
+
+.sync-card-body h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.sync-card-body p {
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin-top: 4px;
+}
+
+.sync-instructions {
+  background: var(--bg-subtle);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--fg);
+}
+
+.sync-instructions ol {
+  padding-left: 18px;
+  margin-top: 4px;
+}
+
+.sync-instructions li {
+  margin-bottom: 2px;
+}
+
+.paste-area {
+  width: 100%;
+  min-height: 84px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-input);
+  color: var(--fg);
+  resize: vertical;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+}
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-sheet {
+  background: var(--sheet);
+  color: #ffffff;
+}
+.btn-sheet:hover {
+  background: var(--sheet-hover);
+}
+
+.btn-subtle {
+  background: var(--bg-subtle);
+  color: var(--fg);
+  border-color: var(--border);
+}
+.btn-subtle:hover {
+  background: var(--border);
+}
+
+.btn-danger {
+  background: var(--danger-light);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: var(--shadow-md);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--fg-muted);
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-input);
+  color: var(--fg);
+  font-family: var(--font-main);
+  font-size: 14px;
+}
+
+.form-input:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  right: max(24px, env(safe-area-inset-right, 0px));
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--fg);
+  color: var(--bg);
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+  animation: slideUp 0.2s ease-out;
+  max-width: min(420px, 80vw);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+  * { transition: none !important; }
+}
+
+/* Footer note */
+.storage-note {
+  font-size: 12px;
+  color: var(--fg-subtle);
+  text-align: center;
+  padding: 4px 8px 0;
+}
+</style>
+</head>
+<body>
+<div class="app-container"><!-- Header -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-badge">P4P</div>
+      <div class="brand-info">
+        <h1>แบบบันทึกผลการปฏิบัติงาน P4P</h1>
+        <p id="docSubInfo">กลุ่มงานเวชกรรมสังคม โรงพยาบาลนราธิวาสราชนครินทร์</p>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <div class="month-selector">
+        <label for="monthSelect">เดือน</label>
+        <select id="monthSelect">
+          <option value="1">มกราคม</option>
+          <option value="2">กุมภาพันธ์</option>
+          <option value="3">มีนาคม</option>
+          <option value="4">เมษายน</option>
+          <option value="5">พฤษภาคม</option>
+          <option value="6">มิถุนายน</option>
+          <option value="7">กรกฎาคม</option>
+          <option value="8">สิงหาคม</option>
+          <option value="9">กันยายน</option>
+          <option value="10">ตุลาคม</option>
+          <option value="11">พฤศจิกายน</option>
+          <option value="12">ธันวาคม</option>
+        </select>
+        <select id="yearSelect" aria-label="ปี พ.ศ."></select>
+      </div>
+
+      <button class="doctor-chip" id="doctorChip" title="คลิกเพื่อแก้ไขข้อมูลผู้บันทึก">
+        <span id="docNameDisplay">นพ.ฮัมดี หะยีอาลี</span>
+        <small>(แก้ไข)</small>
+      </button>
+    </div>
+  </header>
+
+  <!-- KPI Cards -->
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="kpi-label">รวมแต้มสะสมทั้งเดือน</div>
+      <div class="kpi-value num" id="totalPointsDisplay">0.00</div>
+      <div class="kpi-sub">คำนวณตามสูตร =SUM(F6:F24) ของชีต</div>
+    </div>
+
+    <div class="kpi-card k-accent">
+      <div class="kpi-label">รวมจำนวนผลงาน (ทุกหน่วย)</div>
+      <div class="kpi-value num" id="totalCountDisplay">0</div>
+      <div class="kpi-sub">คน / ชั่วโมง / ครั้ง</div>
+    </div>
+
+    <div class="kpi-card k-sheet">
+      <div class="kpi-label">แต้มของวันที่เลือก (วันที่ <span id="kpiSelectedDayLabel">1</span>)</div>
+      <div class="kpi-value num" id="dayPointsDisplay">0.00</div>
+      <div class="kpi-sub"><span id="dayCountDisplay">0</span> ผลงานในวันนั้น</div>
+    </div>
+
+    <div class="kpi-card k-warn">
+      <div class="kpi-label">วันที่มีการบันทึกงาน</div>
+      <div class="kpi-value num" id="activeDaysDisplay">0 / 31</div>
+      <div class="kpi-sub">เฉลี่ย <span id="avgPtsPerDay">0.0</span> แต้ม/วันที่บันทึก</div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <nav class="tabs-nav" aria-label="มุมมองการบันทึก">
+    <button class="tab-btn active" data-tab="daily">บันทึกรายวัน</button>
+    <button class="tab-btn" data-tab="matrix">ตาราง 31 วัน</button>
+    <button class="tab-btn" data-tab="stats">สรุป &amp; สถิติ</button>
+    <button class="tab-btn" data-tab="sync">ส่งออกข้อมูล</button>
+  </nav>
+
+  <!-- ============ VIEW 1: DAILY ENTRY ============ -->
+  <div class="view-panel active" id="view-daily">
+    <div class="daily-container">
+
+      <aside class="calendar-sidebar">
+        <div class="date-header">
+          <button class="date-nav-btn" id="prevDayBtn" title="วันก่อนหน้า" aria-label="วันก่อนหน้า">‹</button>
+          <strong id="calendarMonthTitle">—</strong>
+          <button class="date-nav-btn" id="nextDayBtn" title="วันถัดไป" aria-label="วันถัดไป">›</button>
+        </div>
+
+        <div class="days-grid" id="daysGrid"></div>
+
+        <div class="day-summary-box">
+          <div class="day-summary-row">
+            <span style="color:var(--fg-muted);">วันที่กำลังบันทึก:</span>
+            <strong id="sidebarSelectedDate">—</strong>
+          </div>
+          <div class="day-summary-row">
+            <span style="color:var(--fg-muted);">แต้มวันนี้:</span>
+            <strong class="num" style="color:var(--primary);" id="sidebarDayPts">0.00</strong>
+          </div>
+          <div class="day-summary-row">
+            <span style="color:var(--fg-muted);">จำนวนผลงาน:</span>
+            <strong class="num" id="sidebarDayItems">0</strong>
+          </div>
+          <div class="day-summary-actions">
+            <button class="btn btn-subtle btn-sm" style="flex:1;" id="copyPrevDayBtn">คัดลอกจากเมื่อวาน</button>
+          </div>
+          <div class="day-summary-actions">
+            <button class="btn btn-danger btn-sm" style="flex:1;" id="clearDayBtn">ล้างข้อมูลวันนี้</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="daily-content">
+        <div class="daily-topbar">
+          <div class="selected-day-heading">
+            <h2 id="dailyTitleText">บันทึกผลงาน วันที่ 1</h2>
+            <span id="dailyDateSub">—</span>
+          </div>
+
+          <div class="activity-filter-tags">
+            <button class="filter-tag active" data-filter="all">ทั้งหมด (19)</button>
+            <button class="filter-tag" data-filter="opd">OPD / ตรวจรักษา</button>
+            <button class="filter-tag" data-filter="palliative">Palliative / ดูแลต่อเนื่อง</button>
+            <button class="filter-tag" data-filter="community">ชุมชน / ออกตรวจ</button>
+            <button class="filter-tag" data-filter="meeting">ประชุม / วิชาการ</button>
+            <button class="filter-tag" data-filter="hasdata">เฉพาะที่มีผลงาน</button>
+          </div>
+        </div>
+
+        <div class="activities-list" id="activitiesList"></div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ============ VIEW 2: 31-DAY MATRIX ============ -->
+  <div class="view-panel" id="view-matrix">
+    <div class="matrix-card">
+      <div class="matrix-toolbar">
+        <div>
+          <h2>ตารางรวม 31 วัน (รูปแบบเดียวกับ Google Sheet)</h2>
+          <p>พิมพ์ตัวเลขลงช่องได้เลย ใช้ปุ่มลูกศรเลื่อนได้ทั้งแนวตั้งและแนวนอน ผลรวมคำนวณอัตโนมัติ</p>
+        </div>
+        <div class="matrix-actions">
+          <button class="btn btn-sheet btn-sm" id="matrixQuickCopyBtn">คัดลอกไปวางในชีต (เริ่มที่ G6)</button>
+        </div>
+      </div>
+
+      <div class="table-scroll-container">
+        <table class="p4p-table" id="matrixTable">
+          <thead>
+            <tr>
+              <th class="col-sticky-1">ที่</th>
+              <th class="col-sticky-2">กิจกรรม</th>
+              <th class="col-unit">หน่วยนับ</th>
+              <th class="col-rate">แต้ม/หน่วย</th>
+              <th class="col-sum-count">รวมจำนวน</th>
+              <th class="col-sum-pts">รวมแต้ม</th>
+              <th class="day-col">1</th><th class="day-col">2</th><th class="day-col">3</th><th class="day-col">4</th><th class="day-col">5</th>
+              <th class="day-col">6</th><th class="day-col">7</th><th class="day-col">8</th><th class="day-col">9</th><th class="day-col">10</th>
+              <th class="day-col">11</th><th class="day-col">12</th><th class="day-col">13</th><th class="day-col">14</th><th class="day-col">15</th>
+              <th class="day-col">16</th><th class="day-col">17</th><th class="day-col">18</th><th class="day-col">19</th><th class="day-col">20</th>
+              <th class="day-col">21</th><th class="day-col">22</th><th class="day-col">23</th><th class="day-col">24</th><th class="day-col">25</th>
+              <th class="day-col">26</th><th class="day-col">27</th><th class="day-col">28</th><th class="day-col">29</th><th class="day-col">30</th>
+              <th class="day-col">31</th>
+            </tr>
+          </thead>
+          <tbody id="matrixTableBody"></tbody>
+          <tfoot>
+            <tr class="row-total">
+              <td class="col-sticky-1"></td>
+              <td class="col-sticky-2"><strong>รวมทั้งหมด (แถวที่ 5 ของชีต)</strong></td>
+              <td class="col-unit"></td>
+              <td class="col-rate"></td>
+              <td class="col-sum-count num" id="matrixFooterTotalCount">0</td>
+              <td class="col-sum-pts num" id="matrixFooterTotalPts">0.00</td>
+              <td colspan="31" style="text-align:left; padding-left:12px; font-weight:400; color:var(--fg-muted);">
+                แต้มรวม = ผลรวมของคอลัมน์ "รวมแต้ม" ทุกกิจกรรม
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ VIEW 3: STATS ============ -->
+  <div class="view-panel" id="view-stats">
+    <div class="stats-grid">
+      <div class="card-panel">
+        <div class="card-title">
+          <span>แนวโน้มแต้มรายวัน</span>
+          <span class="sub" id="statsMonthLabel">—</span>
+        </div>
+        <div class="chart-container">
+          <svg id="dailyChartSvg" width="100%" height="100%" viewBox="0 0 700 220" preserveAspectRatio="none" style="overflow:visible;"></svg>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <div class="card-title"><span>สัดส่วนแต้มตามหมวดงาน</span></div>
+        <div class="ranking-list" id="categoryBreakdownList"></div>
+      </div>
+    </div>
+
+    <div class="card-panel" style="margin-top:16px;">
+      <div class="card-title"><span>กิจกรรมที่ทำแต้มสูงสุด</span></div>
+      <div class="ranking-list" id="topActivitiesList"></div>
+    </div>
+  </div>
+
+  <!-- ============ VIEW 4: SYNC ============ -->
+  <div class="view-panel" id="view-sync">
+    <div class="sync-container">
+
+      <div class="sync-card">
+        <div>
+          <div class="sync-card-header">
+            <div class="sync-icon icon-sheet">NEW</div>
+            <div class="sync-card-body">
+              <h3>ผู้ใช้ใหม่: สร้างแท็บของตัวเองในชีตเดียวกัน</h3>
+              <p>ทุกคนใช้ไฟล์ Google Sheet "P4P Family Medicine 2569" ร่วมกัน แต่แยกแท็บ (tab) ละคน ไม่ทับข้อมูลกัน</p>
+            </div>
+          </div>
+
+          <div class="sync-instructions" style="margin-top:14px;">
+            <strong>ขั้นตอน:</strong>
+            <ol>
+              <li>เปิดชีต แล้วกด <strong>+</strong> มุมซ้ายล่างเพื่อเพิ่มแท็บใหม่ ตั้งชื่อเป็นชื่อตัวเอง</li>
+              <li>คลิกแท็บต้นแบบ <strong>Sheet1</strong> แล้วกด <strong>Ctrl+A</strong> (Mac: <strong>Cmd+A</strong>) เลือกทั้งชีต กดคัดลอก</li>
+              <li>กลับไปแท็บใหม่ของตัวเอง วางที่เซลล์ <strong>A1</strong> — โครงสร้างและสูตรจะติดมาครบ</li>
+              <li>แก้บรรทัดที่ 3 เป็นชื่อ/ตำแหน่งของตัวเอง และแก้ "ประจำเดือน" บรรทัดที่ 2</li>
+              <li>จากนั้นใช้แอปนี้กับคอลัมน์วันที่ของ <strong>แท็บตัวเอง</strong> ตามขั้นตอนในการ์ดถัดไป</li>
+            </ol>
+            <p style="margin-top:6px;">ของทุกเดือน: คัดลอกแท็บ <strong>ของตัวเอง</strong> เดือนก่อน แล้วเปลี่ยนชื่อแท็บเป็นเดือนใหม่ — ไม่ต้องคัดลอกจาก Sheet1 อีก</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="sync-card">
+        <div>
+          <div class="sync-card-header">
+            <div class="sync-icon icon-sheet">G6</div>
+            <div class="sync-card-body">
+              <h3>วางใน Google Sheet ตรงจุดทันที</h3>
+              <p>คัดลอกเฉพาะตัวเลข 19 แถว × 31 วัน สำหรับวางทับช่วง G6:AK24</p>
+            </div>
+          </div>
+
+          <div class="sync-instructions" style="margin-top:14px;">
+            <strong>ขั้นตอน:</strong>
+            <ol>
+              <li>กดปุ่ม <strong>"คัดลอกข้อมูลวันที่ 1–31 (G6:AK24)"</strong> ด้านล่าง</li>
+              <li>เปิด Google Sheet "P4P Family Medicine 2569" ของเดือนนั้น</li>
+              <li>คลิกที่เซลล์ <strong>G6</strong></li>
+              <li>กด <strong>Ctrl+V</strong> (Mac: <strong>Cmd+V</strong>)</li>
+              <li>คอลัมน์รวมจำนวน/รวมแต้มในชีตจะคำนวณให้เองจากสูตรเดิม</li>
+            </ol>
+          </div>
+        </div>
+
+        <button class="btn btn-sheet" id="copyG6Btn">คัดลอกข้อมูลวันที่ 1–31 (G6:AK24)</button>
+      </div>
+
+      <div class="sync-card">
+        <div>
+          <div class="sync-card-header">
+            <div class="sync-icon icon-csv">TSV</div>
+            <div class="sync-card-body">
+              <h3>คัดลอกตารางเต็ม (พร้อมชื่อกิจกรรม)</h3>
+              <p>รวมคอลัมน์ ที่, กิจกรรม, หน่วยนับ, แต้ม/หน่วย, รวมจำนวน, รวมแต้ม และวันที่ 1–31 — วางลงแท็บใหม่ในชีตหรือใน Excel ได้ทันที</p>
+            </div>
+          </div>
+
+          <p style="font-size:13px; color:var(--fg-muted); margin-top:10px;">
+            วางที่เซลล์ A4 ของแท็บเปล่า จะได้โครงสร้างเหมือนแบบฟอร์มต้นฉบับ
+          </p>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn btn-primary" id="copyFullTableBtn">คัดลอกตารางทั้งหมด (A4:AK24)</button>
+          <button class="btn btn-subtle" id="copyCsvBtn">คัดลอกเป็นข้อความ CSV</button>
+        </div>
+      </div>
+
+      <div class="sync-card">
+        <div>
+          <div class="sync-card-header">
+            <div class="sync-icon icon-backup">BAK</div>
+            <div class="sync-card-body">
+              <h3>สำรอง / ย้ายข้อมูลระหว่างเครื่อง</h3>
+              <p>ข้อมูลถูกบันทึกไว้ในเบราว์เซอร์ที่ใช้งานอัตโนมัติ หากต้องการย้ายไปเครื่องอื่น ให้คัดลอกข้อความสำรองไปวางในช่องนำเข้าของอีกเครื่อง</p>
+            </div>
+          </div>
+
+          <textarea class="paste-area" id="backupTextArea" placeholder="ข้อความสำรอง (JSON) จะปรากฏที่นี่เมื่อกดปุ่มคัดลอก หรือวางข้อความสำรองที่นี่เพื่อนำเข้า" aria-label="ข้อความสำรองข้อมูล JSON"></textarea>
+        </div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-subtle" id="exportJsonBtn" style="flex:1;">สร้างข้อความสำรอง</button>
+          <button class="btn btn-primary" id="importJsonBtn" style="flex:1;">นำเข้าจากช่องข้างบน</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="storage-note">
+    ข้อมูลบันทึกอัตโนมัติในเบราว์เซอร์ของเครื่องนี้ (ไม่มีการส่งออกไปเซิร์ฟเวอร์อื่น) —
+    ใช้แท็บ "ส่งออกข้อมูล" เพื่อสำรองหรือคัดลอกลง Google Sheet
+  </p>
+
+</div>
+
+<!-- Modal: Profile Edit -->
+<div class="modal-backdrop" id="profileModal" hidden>
+  <div class="modal-content" role="dialog" aria-modal="true" aria-label="แก้ไขข้อมูลผู้บันทึก">
+    <div class="modal-header">
+      <h3>แก้ไขข้อมูลผู้บันทึก</h3>
+      <button class="date-nav-btn" id="closeModalBtn" aria-label="ปิด">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label for="inputDocName">ชื่อ - สกุล</label>
+      <input type="text" class="form-input" id="inputDocName">
+    </div>
+
+    <div class="form-group">
+      <label for="inputDocPosition">ตำแหน่ง</label>
+      <input type="text" class="form-input" id="inputDocPosition">
+    </div>
+
+    <div class="form-group">
+      <label for="inputDocDept">กลุ่มงาน / แผนก</label>
+      <input type="text" class="form-input" id="inputDocDept">
+    </div>
+
+    <div class="form-group">
+      <label for="inputDocHosp">โรงพยาบาล</label>
+      <input type="text" class="form-input" id="inputDocHosp">
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px;">
+      <button class="btn btn-subtle" id="cancelModalBtn">ยกเลิก</button>
+      <button class="btn btn-primary" id="saveProfileBtn">บันทึกข้อมูล</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/**
+ * P4P Family Medicine — แบบบันทึกผลการปฏิบัติงาน
+ * Schema mirrors Google Sheet "P4P Family Medicine 2569" (gid=1327780690):
+ *   rows 6-24 = 19 activities, cols G..AK = days 1-31, E = รวมจำนวน, F = รวมแต้ม (D*E), F5 = SUM(F6:F24)
+ */
+
+var THAI_MONTHS = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+  "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+var THAI_MONTHS_SHORT = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+  "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+// 19 activities, exact names/units/rates from the sheet (typos "ชั้วโมง" corrected to "ชั่วโมง", "หัตฐการ" kept as in sheet)
+var ACTIVITIES = [
+  { id: 1,  name: "ตรวจ OPD  Checkup",                          unit: "คน",      pts: 10.00, cat: "opd" },
+  { id: 2,  name: "ออกตรวจ คลินิกหมอครอบครัวและรพ.สต.",         unit: "คน",      pts: 10.00, cat: "community" },
+  { id: 3,  name: "ออกตรวจ เรือนจำ",                            unit: "คน",      pts: 15.00, cat: "community" },
+  { id: 4,  name: "ตรวจ OPD ผู้สูงอายุ",                        unit: "คน",      pts: 25.00, cat: "opd" },
+  { id: 5,  name: "ตรวจ OPD  Palliative care",                  unit: "คน",      pts: 25.00, cat: "palliative" },
+  { id: 6,  name: "ตรวจ OPD Telemedicine",                      unit: "คน",      pts: 10.00, cat: "opd" },
+  { id: 7,  name: "ตรวจ OPD กัญชาทางการแพทย์",                  unit: "คน",      pts: 25.00, cat: "opd" },
+  { id: 8,  name: "Round Palliative care (1 ครั้ง / ราย / วัน)", unit: "คน",     pts: 10.00, cat: "palliative" },
+  { id: 9,  name: "Round Home ward (1 ครั้ง / ราย / วัน)",       unit: "คน",     pts: 10.00, cat: "palliative" },
+  { id: 10, name: "วิทยากร",                                    unit: "ชั่วโมง", pts: 33.00, cat: "meeting" },
+  { id: 11, name: "ประชุมตามนโยบาย/คำสั่ง",                      unit: "ชั่วโมง", pts: 10.00, cat: "meeting" },
+  { id: 12, name: "ประชุมตามแผนพัฒนาบุคลากร/ยุทธศาสตร์ รพ.",     unit: "ชั่วโมง", pts: 8.00,  cat: "meeting" },
+  { id: 13, name: "ประชุมวิชาการ,PCT,ภายในโรงพยาบาล",            unit: "ชั่วโมง", pts: 10.00, cat: "meeting" },
+  { id: 14, name: "ประชุมโดยการสมัคร",                           unit: "ครั้ง",   pts: 7.85,  cat: "meeting" },
+  { id: 15, name: "ลงชุมชนเยี่ยมบ้าน Home Health Care",          unit: "คน",      pts: 30.00, cat: "community" },
+  { id: 16, name: "รับ Consult Palliative Care",                unit: "คน",      pts: 30.00, cat: "palliative" },
+  { id: 17, name: "Family Meeting /Counselling",                unit: "คน",      pts: 30.00, cat: "palliative" },
+  { id: 18, name: "DM Remission",                               unit: "คน",      pts: 10.00, cat: "opd" },
+  { id: 19, name: "หัตฐการ",                                    unit: "คน",      pts: 8.00,  cat: "opd" }
+];
+
+var CATEGORY_NAMES = {
+  opd: "ตรวจรักษา OPD / Telemedicine",
+  community: "ออกตรวจชุมชน / รพ.สต. / เยี่ยมบ้าน",
+  palliative: "Palliative Care / Home Ward / Family Meeting",
+  meeting: "วิทยากร / ประชุม"
+};
+
+var STORAGE_KEY = "p4p_fm_app_v1";
+
+/* เริ่มต้นที่เดือนเดียวกับ Google Sheet ต้นแบบ (กุมภาพันธ์ 2569)
+   ถ้าผู้ใช้เคยเลือกเดือนอื่นไว้ ระบบจะคืนค่าเดิมจาก localStorage */
+var DEFAULT_MONTH = 2;
+var DEFAULT_YEAR = 2569;
+var state = {
+  currentMonth: DEFAULT_MONTH,
+  currentYear: DEFAULT_YEAR,
+  selectedDay: 1,
+  activeFilter: "all",
+  doctor: {
+    name: "นพ.ฮัมดี หะยีอาลี",
+    position: "นายแพทย์ชำนาญการพิเศษ",
+    dept: "กลุ่มงานเวชกรรมสังคม",
+    hosp: "โรงพยาบาลนราธิวาสราชนครินทร์"
+  },
+  store: {}   // store["2569_2"][actId][day] = qty
+};
+
+/* ---------- storage ---------- */
+
+function loadStorage() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    var parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") {
+      if (parsed.store) state.store = parsed.store;
+      if (parsed.doctor) state.doctor = Object.assign(state.doctor, parsed.doctor);
+      if (parsed.currentMonth) state.currentMonth = parsed.currentMonth;
+      if (parsed.currentYear) state.currentYear = parsed.currentYear;
+    }
+  } catch (e) {
+    console.warn("อ่านข้อมูลที่บันทึกไว้ไม่ได้:", e);
+  }
+}
+
+function saveStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      store: state.store,
+      doctor: state.doctor,
+      currentMonth: state.currentMonth,
+      currentYear: state.currentYear
+    }));
+  } catch (e) {
+    console.warn("บันทึกข้อมูลไม่สำเร็จ:", e);
+  }
+}
+
+function periodKey(m, y) {
+  return (y || state.currentYear) + "_" + (m || state.currentMonth);
+}
+
+function getDayValue(actId, day) {
+  var p = state.store[periodKey()];
+  if (p && p[actId] && p[actId][day] !== undefined) {
+    return Number(p[actId][day]) || 0;
+  }
+  return 0;
+}
+
+function setDayValue(actId, day, val) {
+  var k = periodKey();
+  if (!state.store[k]) state.store[k] = {};
+  if (!state.store[k][actId]) state.store[k][actId] = {};
+  var num = Math.max(0, Number(val) || 0);
+  if (num === 0) {
+    delete state.store[k][actId][day];
+    if (Object.keys(state.store[k][actId]).length === 0) delete state.store[k][actId];
+  } else {
+    state.store[k][actId][day] = num;
+  }
+  saveStorage();
+  updateCalculations();
+}
+
+function daysInCurrentMonth() {
+  return new Date(state.currentYear - 543, state.currentMonth, 0).getDate();
+}
+
+/* ---------- helpers ---------- */
+
+function fmtNum(n, decimals) {
+  var d = (decimals === undefined) ? 2 : decimals;
+  var v = Number(n) || 0;
+  if (d === 0) return Math.round(v).toLocaleString("en-US");
+  return v.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+
+function showToast(msg) {
+  var container = document.getElementById("toastContainer");
+  var el = document.createElement("div");
+  el.className = "toast";
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(function () {
+    el.style.opacity = "0";
+    el.style.transition = "opacity 0.3s";
+    setTimeout(function () { el.remove(); }, 300);
+  }, 2600);
+}
+
+function actById(id) {
+  for (var i = 0; i < ACTIVITIES.length; i++) {
+    if (ACTIVITIES[i].id === id) return ACTIVITIES[i];
+  }
+  return null;
+}
+
+function actMonthTotal(actId) {
+  var sum = 0;
+  for (var d = 1; d <= 31; d++) sum += getDayValue(actId, d);
+  return sum;
+}
+
+function monthTotals() {
+  var totalPts = 0, totalCount = 0;
+  var activeDays = {};
+  var dayPts = {};   // day -> points
+  ACTIVITIES.forEach(function (a) {
+    var actSum = 0;
+    for (var d = 1; d <= 31; d++) {
+      var v = getDayValue(a.id, d);
+      if (v > 0) {
+        actSum += v;
+        activeDays[d] = true;
+        dayPts[d] = (dayPts[d] || 0) + v * a.pts;
+      }
+    }
+    totalCount += actSum;
+    totalPts += actSum * a.pts;
+  });
+  return { totalPts: totalPts, totalCount: totalCount, activeDays: activeDays, dayPts: dayPts };
+}
+
+/* ---------- init & wiring ---------- */
+
+function init() {
+  loadStorage();
+
+  // Year options (current year ± 2)
+  var yearSel = document.getElementById("yearSelect");
+  for (var y = state.currentYear - 2; y <= state.currentYear + 2; y++) {
+    var opt = document.createElement("option");
+    opt.value = String(y);
+    opt.textContent = String(y);
+    yearSel.appendChild(opt);
+  }
+
+  document.getElementById("monthSelect").value = String(state.currentMonth);
+  yearSel.value = String(state.currentYear);
+
+  // Clamp selected day into month
+  var dim = daysInCurrentMonth();
+  if (state.selectedDay > dim) state.selectedDay = dim;
+
+  updateDoctorDisplay();
+
+  document.getElementById("monthSelect").addEventListener("change", function (e) {
+    state.currentMonth = parseInt(e.target.value, 10);
+    if (state.selectedDay > daysInCurrentMonth()) state.selectedDay = daysInCurrentMonth();
+    saveStorage();
+    renderAll();
+  });
+
+  document.getElementById("yearSelect").addEventListener("change", function (e) {
+    state.currentYear = parseInt(e.target.value, 10);
+    if (state.selectedDay > daysInCurrentMonth()) state.selectedDay = daysInCurrentMonth();
+    saveStorage();
+    renderAll();
+  });
+
+  setupDoctorModal();
+  setupTabs();
+
+  document.getElementById("prevDayBtn").addEventListener("click", function () {
+    if (state.selectedDay > 1) selectDay(state.selectedDay - 1);
+  });
+
+  document.getElementById("nextDayBtn").addEventListener("click", function () {
+    if (state.selectedDay < daysInCurrentMonth()) selectDay(state.selectedDay + 1);
+  });
+
+  // Two-step inline confirm (no confirm() dialog — it never shows in this viewer)
+  var clearBtn = document.getElementById("clearDayBtn");
+  var clearArmed = null;
+  clearBtn.addEventListener("click", function () {
+    if (clearArmed) {
+      clearTimeout(clearArmed);
+      clearArmed = null;
+      clearBtn.textContent = "ล้างข้อมูลวันนี้";
+      ACTIVITIES.forEach(function (a) { setDayValue(a.id, state.selectedDay, 0); });
+      renderDailyActivities();
+      renderDaysGrid();
+      showToast("ล้างข้อมูลวันที่ " + state.selectedDay + " เรียบร้อย");
+    } else {
+      clearBtn.textContent = "กดอีกครั้งเพื่อยืนยัน";
+      clearArmed = setTimeout(function () {
+        clearArmed = null;
+        clearBtn.textContent = "ล้างข้อมูลวันนี้";
+      }, 3000);
+    }
+  });
+
+  document.getElementById("copyPrevDayBtn").addEventListener("click", function () {
+    if (state.selectedDay <= 1) {
+      showToast("ไม่มีวันก่อนหน้าในเดือนนี้");
+      return;
+    }
+    var prevDay = state.selectedDay - 1;
+    var copied = 0;
+    ACTIVITIES.forEach(function (a) {
+      var v = getDayValue(a.id, prevDay);
+      if (v > 0) { setDayValue(a.id, state.selectedDay, v); copied++; }
+    });
+    renderDailyActivities();
+    renderDaysGrid();
+    showToast(copied > 0
+      ? "คัดลอก " + copied + " รายการจากวันที่ " + prevDay + " แล้ว"
+      : "วันที่ " + prevDay + " ไม่มีข้อมูลให้คัดลอก");
+  });
+
+  var filterButtons = document.querySelectorAll(".filter-tag");
+  filterButtons.forEach(function (tag) {
+    tag.addEventListener("click", function (e) {
+      filterButtons.forEach(function (t) { t.classList.remove("active"); });
+      e.currentTarget.classList.add("active");
+      state.activeFilter = e.currentTarget.dataset.filter;
+      renderDailyActivities();
+    });
+  });
+
+  setupSyncActions();
+  renderAll();
+}
+
+function updateDoctorDisplay() {
+  document.getElementById("docNameDisplay").textContent = state.doctor.name;
+  document.getElementById("docSubInfo").textContent = state.doctor.dept + " " + state.doctor.hosp;
+}
+
+function setupDoctorModal() {
+  var modal = document.getElementById("profileModal");
+  var openBtn = document.getElementById("doctorChip");
+
+  openBtn.addEventListener("click", function () {
+    document.getElementById("inputDocName").value = state.doctor.name;
+    document.getElementById("inputDocPosition").value = state.doctor.position;
+    document.getElementById("inputDocDept").value = state.doctor.dept;
+    document.getElementById("inputDocHosp").value = state.doctor.hosp;
+    modal.hidden = false;
+  });
+
+  function closeModal() { modal.hidden = true; }
+
+  document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+  document.getElementById("cancelModalBtn").addEventListener("click", closeModal);
+
+  modal.addEventListener("click", function (e) {
+    if (e.target === modal) closeModal();
+  });
+
+  document.getElementById("saveProfileBtn").addEventListener("click", function () {
+    var name = document.getElementById("inputDocName").value.trim();
+    state.doctor.name = name || state.doctor.name;
+    state.doctor.position = document.getElementById("inputDocPosition").value.trim();
+    state.doctor.dept = document.getElementById("inputDocDept").value.trim();
+    state.doctor.hosp = document.getElementById("inputDocHosp").value.trim();
+    saveStorage();
+    updateDoctorDisplay();
+    closeModal();
+    showToast("บันทึกข้อมูลผู้บันทึกเรียบร้อย");
+  });
+}
+
+function setupTabs() {
+  var tabs = document.querySelectorAll(".tab-btn");
+  tabs.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var tab = btn.dataset.tab;
+      tabs.forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".view-panel").forEach(function (p) { p.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + tab).classList.add("active");
+      if (tab === "matrix") renderMatrixTable();
+      if (tab === "stats") renderStats();
+    });
+  });
+}
+
+function selectDay(day) {
+  state.selectedDay = day;
+  renderDaysGrid();
+  renderDailyActivities();
+  updateCalculations();
+}
+
+/* ---------- view 1: daily ---------- */
+
+function renderDaysGrid() {
+  var grid = document.getElementById("daysGrid");
+  grid.innerHTML = "";
+
+  var dim = daysInCurrentMonth();
+  var totals = monthTotals();
+
+  document.getElementById("calendarMonthTitle").textContent =
+    THAI_MONTHS[state.currentMonth] + " " + state.currentYear;
+  document.getElementById("dailyDateSub").textContent =
+    THAI_MONTHS[state.currentMonth] + " " + state.currentYear;
+
+  for (var d = 1; d <= dim; d++) {
+    (function (day) {
+      var cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = "day-cell" +
+        (day === state.selectedDay ? " selected" : "") +
+        (totals.dayPts[day] > 0 ? " has-data" : "");
+
+      var pts = totals.dayPts[day] || 0;
+      cell.innerHTML =
+        '<span class="day-num">' + day + "</span>" +
+        '<span class="day-score-pill">' + (pts > 0 ? fmtNum(pts, 0) : "") + "</span>";
+
+      cell.addEventListener("click", function () { selectDay(day); });
+      grid.appendChild(cell);
+    })(d);
+  }
+
+  document.getElementById("sidebarSelectedDate").textContent =
+    state.selectedDay + " " + THAI_MONTHS_SHORT[state.currentMonth] + " " + state.currentYear;
+  document.getElementById("dailyTitleText").textContent =
+    "บันทึกผลงาน วันที่ " + state.selectedDay;
+  document.getElementById("kpiSelectedDayLabel").textContent = state.selectedDay;
+}
+
+function itemTotalHtml(pts) {
+  if (pts > 0) {
+    return '<div>' + fmtNum(pts) + '</div><small>แต้ม</small>';
+  }
+  return '<div style="color:var(--fg-subtle);">—</div><small>&nbsp;</small>';
+}
+
+function renderDailyActivities() {
+  var container = document.getElementById("activitiesList");
+  container.innerHTML = "";
+  var filter = state.activeFilter;
+
+  ACTIVITIES.forEach(function (act) {
+    var val = getDayValue(act.id, state.selectedDay);
+
+    if (filter !== "all" && filter !== "hasdata" && act.cat !== filter) return;
+    if (filter === "hasdata" && val === 0) return;
+
+    var card = document.createElement("div");
+    card.className = "activity-card" + (val > 0 ? " active-input" : "");
+
+    card.innerHTML =
+      '<div class="activity-info">' +
+        '<div class="activity-title"><span class="item-badge">' + act.id + "</span><span>" + act.name + "</span></div>" +
+        '<div class="activity-meta">' +
+          "<span>หน่วยนับ: <strong>" + act.unit + "</strong></span>" +
+          '<span class="pts-badge">' + fmtNum(act.pts) + " แต้ม/" + act.unit + "</span>" +
+        "</div>" +
+      "</div>" +
+      '<div class="activity-stepper">' +
+        '<button type="button" class="step-btn" data-step="-1" aria-label="ลด 1">−1</button>' +
+        '<input type="number" min="0" inputmode="numeric" class="activity-input" data-id="' + act.id +
+          '" value="' + (val > 0 ? val : "") + '" placeholder="0" aria-label="' + act.name + '">' +
+        '<button type="button" class="step-btn" data-step="1" aria-label="เพิ่ม 1">+1</button>' +
+        '<button type="button" class="step-btn" data-step="5" aria-label="เพิ่ม 5">+5</button>' +
+      "</div>" +
+      '<div class="item-day-total">' + itemTotalHtml(val * act.pts) + "</div>";
+
+    var input = card.querySelector(".activity-input");
+    var totalDiv = card.querySelector(".item-day-total");
+
+    function applyValue(v) {
+      input.value = v > 0 ? v : "";
+      totalDiv.innerHTML = itemTotalHtml(v * act.pts);
+      card.classList.toggle("active-input", v > 0);
+    }
+
+    input.addEventListener("input", function (e) {
+      var v = Math.max(0, parseFloat(e.target.value) || 0);
+      setDayValue(act.id, state.selectedDay, v);
+      renderDaysGrid();
+      totalDiv.innerHTML = itemTotalHtml(v * act.pts);
+      card.classList.toggle("active-input", v > 0);
+    });
+
+    input.addEventListener("blur", function () {
+      applyValue(getDayValue(act.id, state.selectedDay));
+    });
+
+    card.querySelectorAll(".step-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var step = parseInt(btn.dataset.step, 10);
+        var next = Math.max(0, getDayValue(act.id, state.selectedDay) + step);
+        setDayValue(act.id, state.selectedDay, next);
+        applyValue(next);
+        renderDaysGrid();
+      });
+    });
+
+    container.appendChild(card);
+  });
+
+  if (container.children.length === 0) {
+    container.innerHTML =
+      '<div style="text-align:center; padding:40px; color:var(--fg-muted); font-size:15px;">' +
+      "ไม่มีรายการที่ตรงกับตัวกรองนี้</div>";
+  }
+}
+
+/* ---------- view 2: matrix ---------- */
+
+function renderMatrixTable() {
+  var tbody = document.getElementById("matrixTableBody");
+  tbody.innerHTML = "";
+  var dim = daysInCurrentMonth();
+
+  ACTIVITIES.forEach(function (act) {
+    var tr = document.createElement("tr");
+    var rowCount = actMonthTotal(act.id);
+    var rowPts = rowCount * act.pts;
+
+    var daysHtml = "";
+    for (var d = 1; d <= 31; d++) {
+      var v = getDayValue(act.id, d);
+      var past = d > dim;
+      daysHtml +=
+        '<td class="day-col' + (past ? " past-month" : "") + '">' +
+          '<input type="text" inputmode="numeric" class="matrix-input' + (v > 0 ? " has-val" : "") +
+            '" data-act="' + act.id + '" data-day="' + d + '" value="' + (v > 0 ? v : "") + '"' +
+            (past ? " disabled" : "") + ">" +
+        "</td>";
+    }
+
+    tr.innerHTML =
+      '<td class="col-sticky-1">' + act.id + "</td>" +
+      '<td class="col-sticky-2" title="' + act.name.replace(/"/g, "&quot;") + '">' + act.name + "</td>" +
+      '<td class="col-unit">' + act.unit + "</td>" +
+      '<td class="col-rate">' + fmtNum(act.pts) + "</td>" +
+      '<td class="col-sum-count num" id="matrixRowCount_' + act.id + '">' + fmtNum(rowCount, 0) + "</td>" +
+      '<td class="col-sum-pts num" id="matrixRowPts_' + act.id + '">' + fmtNum(rowPts) + "</td>" +
+      daysHtml;
+
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll(".matrix-input").forEach(function (inp) {
+    inp.addEventListener("change", function (e) {
+      var actId = parseInt(e.target.dataset.act, 10);
+      var day = parseInt(e.target.dataset.day, 10);
+      var val = Math.max(0, parseFloat(e.target.value) || 0);
+      setDayValue(actId, day, val);
+      e.target.value = val > 0 ? val : "";
+      e.target.classList.toggle("has-val", val > 0);
+
+      var act = actById(actId);
+      var rCount = actMonthTotal(actId);
+      document.getElementById("matrixRowCount_" + actId).textContent = fmtNum(rCount, 0);
+      document.getElementById("matrixRowPts_" + actId).textContent = fmtNum(rCount * act.pts);
+    });
+
+    inp.addEventListener("keydown", function (e) {
+      var actId = parseInt(e.target.dataset.act, 10);
+      var day = parseInt(e.target.dataset.day, 10);
+      var target = null;
+
+      if (e.key === "ArrowRight") target = tbody.querySelector('.matrix-input[data-act="' + actId + '"][data-day="' + (day + 1) + '"]');
+      else if (e.key === "ArrowLeft") target = tbody.querySelector('.matrix-input[data-act="' + actId + '"][data-day="' + (day - 1) + '"]');
+      else if (e.key === "ArrowDown") target = tbody.querySelector('.matrix-input[data-act="' + (actId + 1) + '"][data-day="' + day + '"]');
+      else if (e.key === "ArrowUp") target = tbody.querySelector('.matrix-input[data-act="' + (actId - 1) + '"][data-day="' + day + '"]');
+
+      if (target) {
+        e.preventDefault();
+        target.focus();
+        target.select();
+      }
+    });
+  });
+
+  updateCalculations();
+}
+
+/* ---------- KPI / totals ---------- */
+
+function updateCalculations() {
+  var t = monthTotals();
+  var selPts = t.dayPts[state.selectedDay] || 0;
+
+  document.getElementById("totalPointsDisplay").textContent = fmtNum(t.totalPts);
+  document.getElementById("totalCountDisplay").textContent = fmtNum(t.totalCount, 0);
+  document.getElementById("dayPointsDisplay").textContent = fmtNum(selPts);
+
+  var selCount = 0;
+  ACTIVITIES.forEach(function (a) {
+    var v = getDayValue(a.id, state.selectedDay);
+    if (v > 0) selCount += v;
+  });
+  document.getElementById("dayCountDisplay").textContent = fmtNum(selCount, 0);
+
+  var activeCount = Object.keys(t.activeDays).length;
+  document.getElementById("activeDaysDisplay").textContent =
+    activeCount + " / " + daysInCurrentMonth();
+  document.getElementById("avgPtsPerDay").textContent =
+    fmtNum(activeCount > 0 ? t.totalPts / activeCount : 0, 1);
+
+  document.getElementById("sidebarDayPts").textContent = fmtNum(selPts);
+  document.getElementById("sidebarDayItems").textContent = fmtNum(selCount, 0);
+
+  var fPts = document.getElementById("matrixFooterTotalPts");
+  var fCount = document.getElementById("matrixFooterTotalCount");
+  if (fPts) fPts.textContent = fmtNum(t.totalPts);
+  if (fCount) fCount.textContent = fmtNum(t.totalCount, 0);
+}
+
+/* ---------- view 3: stats ---------- */
+
+function renderStats() {
+  document.getElementById("statsMonthLabel").textContent =
+    THAI_MONTHS[state.currentMonth] + " " + state.currentYear;
+
+  var dim = daysInCurrentMonth();
+  var totals = monthTotals();
+  var maxDayPts = 10;
+
+  var svg = document.getElementById("dailyChartSvg");
+  var NS = "http://www.w3.org/2000/svg";
+  svg.innerHTML = "";
+
+  var chartW = 700, chartH = 220;
+  var padBottom = 28, padTop = 20, padLeft = 44;
+  var plotH = chartH - padTop - padBottom;
+  var barW = Math.max(8, (chartW - padLeft) / dim - 4);
+
+  for (var d = 1; d <= dim; d++) {
+    if ((totals.dayPts[d] || 0) > maxDayPts) maxDayPts = totals.dayPts[d];
+  }
+
+  // horizontal grid + y labels
+  var gridSteps = 4;
+  for (var i = 0; i <= gridSteps; i++) {
+    var yPos = chartH - padBottom - (plotH / gridSteps) * i;
+
+    var line = document.createElementNS(NS, "line");
+    line.setAttribute("x1", padLeft);
+    line.setAttribute("x2", chartW);
+    line.setAttribute("y1", yPos);
+    line.setAttribute("y2", yPos);
+    line.setAttribute("stroke", "var(--border)");
+    line.setAttribute("stroke-dasharray", "3,3");
+    svg.appendChild(line);
+
+    var txt = document.createElementNS(NS, "text");
+    txt.setAttribute("x", padLeft - 6);
+    txt.setAttribute("y", yPos + 4);
+    txt.setAttribute("text-anchor", "end");
+    txt.setAttribute("fill", "var(--fg-subtle)");
+    txt.setAttribute("font-size", "10");
+    txt.setAttribute("font-family", "var(--font-mono)");
+    txt.textContent = String(Math.round((maxDayPts / gridSteps) * i));
+    svg.appendChild(txt);
+  }
+
+  // bars
+  for (var day = 1; day <= dim; day++) {
+    (function (item) {
+      var pts = totals.dayPts[item] || 0;
+      var xPos = padLeft + (item - 1) * ((chartW - padLeft) / dim) + 2;
+      var barH = (pts / maxDayPts) * plotH;
+      var yPos = chartH - padBottom - barH;
+
+      var rect = document.createElementNS(NS, "rect");
+      rect.setAttribute("x", xPos);
+      rect.setAttribute("y", yPos);
+      rect.setAttribute("width", barW);
+      rect.setAttribute("height", Math.max(pts > 0 ? 2 : 1, barH));
+      rect.setAttribute("rx", "3");
+      rect.setAttribute("fill", pts > 0
+        ? (item === state.selectedDay ? "var(--accent)" : "var(--primary)")
+        : "var(--bg-subtle)");
+      rect.setAttribute("stroke", "var(--border)");
+
+      var title = document.createElementNS(NS, "title");
+      title.textContent = "วันที่ " + item + ": " + fmtNum(pts) + " แต้ม";
+      rect.appendChild(title);
+
+      rect.style.cursor = "pointer";
+      rect.addEventListener("click", function () {
+        selectDay(item);
+        document.querySelector('[data-tab="daily"]').click();
+      });
+      svg.appendChild(rect);
+
+      if (item % 2 === 1 || item === dim) {
+        var xLabel = document.createElementNS(NS, "text");
+        xLabel.setAttribute("x", xPos + barW / 2);
+        xLabel.setAttribute("y", chartH - 8);
+        xLabel.setAttribute("text-anchor", "middle");
+        xLabel.setAttribute("fill", "var(--fg-muted)");
+        xLabel.setAttribute("font-size", "10");
+        xLabel.setAttribute("font-family", "var(--font-mono)");
+        xLabel.textContent = String(item);
+        svg.appendChild(xLabel);
+      }
+    })(day);
+  }
+
+  renderCategoryBreakdown();
+  renderTopActivities();
+}
+
+function renderCategoryBreakdown() {
+  var container = document.getElementById("categoryBreakdownList");
+  container.innerHTML = "";
+
+  var catPts = {}, catCount = {};
+  var totalPts = 0;
+
+  ACTIVITIES.forEach(function (a) {
+    var sum = actMonthTotal(a.id);
+    var pts = sum * a.pts;
+    catPts[a.cat] = (catPts[a.cat] || 0) + pts;
+    catCount[a.cat] = (catCount[a.cat] || 0) + sum;
+    totalPts += pts;
+  });
+
+  Object.keys(CATEGORY_NAMES).forEach(function (cat) {
+    var pts = catPts[cat] || 0;
+    var pct = totalPts > 0 ? (pts / totalPts) * 100 : 0;
+    var el = document.createElement("div");
+    el.className = "ranking-item";
+    el.innerHTML =
+      '<div style="width:170px; font-weight:600; font-size:12px;">' + CATEGORY_NAMES[cat] + "</div>" +
+      '<div class="rank-bar-wrap">' +
+        '<div style="display:flex; justify-content:space-between; font-size:11px; color:var(--fg-muted);">' +
+          "<span>" + fmtNum(catCount[cat] || 0, 0) + " ครั้ง</span>" +
+          '<span class="num">' + fmtNum(pts) + " แต้ม (" + fmtNum(pct, 1) + "%)</span>" +
+        "</div>" +
+        '<div class="rank-bar-bg"><div class="rank-bar-fill" style="width:' + pct.toFixed(1) + '%;"></div></div>' +
+      "</div>";
+    container.appendChild(el);
+  });
+}
+
+function renderTopActivities() {
+  var container = document.getElementById("topActivitiesList");
+  container.innerHTML = "";
+
+  var ranked = ACTIVITIES.map(function (a) {
+    var sum = actMonthTotal(a.id);
+    return { id: a.id, name: a.name, unit: a.unit, totalCount: sum, totalPts: sum * a.pts };
+  }).sort(function (x, y) { return y.totalPts - x.totalPts; });
+
+  var maxPts = ranked.length > 0 ? ranked[0].totalPts : 1;
+  var shown = 0;
+
+  ranked.forEach(function (a, i) {
+    if (a.totalPts === 0 || shown >= 10) return;
+    shown++;
+    var pct = maxPts > 0 ? (a.totalPts / maxPts) * 100 : 0;
+    var el = document.createElement("div");
+    el.className = "ranking-item";
+    el.innerHTML =
+      '<div style="width:28px; font-weight:700; color:var(--fg-muted);" class="num">#' + (shown) + "</div>" +
+      '<div style="width:250px; font-weight:600; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + a.name.replace(/"/g, "&quot;") + '">' +
+        a.name + "</div>" +
+      '<div class="rank-bar-wrap">' +
+        '<div style="display:flex; justify-content:space-between; font-size:11px; color:var(--fg-muted);">' +
+          "<span>" + fmtNum(a.totalCount, 0) + " " + a.unit + "</span>" +
+          '<span class="num" style="color:var(--primary); font-weight:700;">' + fmtNum(a.totalPts) + " แต้ม</span>" +
+        "</div>" +
+        '<div class="rank-bar-bg"><div class="rank-bar-fill" style="width:' + pct.toFixed(1) + '%;"></div></div>' +
+      "</div>";
+    container.appendChild(el);
+  });
+
+  if (shown === 0) {
+    container.innerHTML =
+      '<p style="color:var(--fg-muted); font-size:13px; text-align:center; padding:16px;">' +
+      "ยังไม่มีข้อมูลผลงานในเดือนนี้ — เริ่มบันทึกได้ที่แท็บ บันทึกรายวัน</p>";
+  }
+}
+
+/* ---------- view 4: sync / export ---------- */
+
+// 19 rows x 31 day columns, blank when zero — paste at G6 of the sheet
+function generateG6AK24Tsv() {
+  var rows = [];
+  ACTIVITIES.forEach(function (a) {
+    var cells = [];
+    for (var d = 1; d <= 31; d++) {
+      var v = getDayValue(a.id, d);
+      cells.push(v > 0 ? String(v) : "");
+    }
+    rows.push(cells.join("\t"));
+  });
+  return rows.join("\n");
+}
+
+// Header row + total row + 19 activity rows, matching the sheet layout A4:AK24
+function generateFullTableTsv() {
+  var rows = [];
+  var header = ["ที่", "กิจกรรม", "หน่วยนับ", "แต้ม/หน่วย", "รวมจำนวน", "รวมแต้ม"];
+  for (var d = 1; d <= 31; d++) header.push(String(d));
+  rows.push(header.join("\t"));
+
+  var t = monthTotals();
+  var row5 = ["", "", "", "", "", t.totalPts.toFixed(2)];
+  for (var z = 1; z <= 31; z++) row5.push("");
+  rows.push(row5.join("\t"));
+
+  ACTIVITIES.forEach(function (a) {
+    var sum = actMonthTotal(a.id);
+    var r = [String(a.id), a.name, a.unit, a.pts.toFixed(2), String(sum), (sum * a.pts).toFixed(2)];
+    for (var d = 1; d <= 31; d++) {
+      var v = getDayValue(a.id, d);
+      r.push(v > 0 ? String(v) : "");
+    }
+    rows.push(r.join("\t"));
+  });
+
+  return rows.join("\n");
+}
+
+function tsvToCsv(tsv) {
+  return tsv.split("\n").map(function (line) {
+    return line.split("\t").map(function (cell) {
+      return '"' + cell.replace(/"/g, '""') + '"';
+    }).join(",");
+  }).join("\n");
+}
+
+function copyToClipboard(text, okMsg) {
+  function fallback() {
+    var ta = document.getElementById("backupTextArea");
+    var prev = ta.value;
+    ta.value = text;
+    ta.focus();
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    if (!ok) {
+      showToast("คัดลอกอัตโนมัติไม่ได้ — ข้อความอยู่ในช่องสำรองแล้ว กด Ctrl+C เองได้");
+      return;
+    }
+    showToast(okMsg);
+    setTimeout(function () { ta.value = prev; }, 1500);
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () {
+      showToast(okMsg);
+    }).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+function setupSyncActions() {
+  var copyG6 = function () {
+    copyToClipboard(generateG6AK24Tsv(),
+      "คัดลอก 19×31 วันเรียบร้อย — วางที่เซลล์ G6 ของชีตได้เลย");
+  };
+  document.getElementById("copyG6Btn").addEventListener("click", copyG6);
+  document.getElementById("matrixQuickCopyBtn").addEventListener("click", copyG6);
+
+  document.getElementById("copyFullTableBtn").addEventListener("click", function () {
+    copyToClipboard(generateFullTableTsv(), "คัดลอกตารางเต็มเรียบร้อย — วางที่ A4 ของแท็บเปล่า");
+  });
+
+  document.getElementById("copyCsvBtn").addEventListener("click", function () {
+    copyToClipboard(tsvToCsv(generateFullTableTsv()), "คัดลอก CSV เรียบร้อย");
+  });
+
+  document.getElementById("exportJsonBtn").addEventListener("click", function () {
+    var payload = JSON.stringify({
+      version: "1.0",
+      doctor: state.doctor,
+      exportDate: new Date().toISOString(),
+      store: state.store
+    });
+    var ta = document.getElementById("backupTextArea");
+    ta.value = payload;
+    ta.focus();
+    ta.select();
+    copyToClipboard(payload, "สร้างข้อความสำรองแล้ว (อยู่ในช่องและในคลิปบอร์ด)");
+  });
+
+  document.getElementById("importJsonBtn").addEventListener("click", function () {
+    var raw = document.getElementById("backupTextArea").value.trim();
+    if (!raw) {
+      showToast("วางข้อความสำรองลงในช่องก่อนกดนำเข้า");
+      return;
+    }
+    try {
+      var parsed = JSON.parse(raw);
+      if (!parsed || !parsed.store) throw new Error("ไม่พบข้อมูล store");
+      state.store = Object.assign(state.store, parsed.store);
+      if (parsed.doctor) state.doctor = Object.assign(state.doctor, parsed.doctor);
+      saveStorage();
+      renderAll();
+      showToast("นำเข้าข้อมูลสำรองเรียบร้อย");
+    } catch (err) {
+      showToast("ข้อความสำรองไม่ถูกต้อง: " + err.message);
+    }
+  });
+}
+
+/* ---------- render all ---------- */
+
+function renderAll() {
+  updateCalculations();
+  renderDaysGrid();
+  renderDailyActivities();
+  renderMatrixTable();
+  renderStats();
+}
+
+window.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
