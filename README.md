@@ -154,7 +154,7 @@ var THAI_HOLIDAYS = {
 16. **รับ Consult Palliative Care** — 30.00 แต้ม/คน
 17. **รับ Consult จาก PCC/PCU ที่รับผิดชอบ** — 15.00 แต้ม/คน
 18. **Family Meeting / Counselling** — 30.00 แต้ม/คน
-19. **DM Remission** — 10.00 แต้ม/คน
+19. **DM Remission** — 25.00 แต้ม/คน
 20. **หัตถการ** — 8.00 แต้ม/คน
 
 ---
