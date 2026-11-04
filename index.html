@@ -1550,7 +1550,7 @@ details.sync-instructions[open] summary {
     <div class="brand-section">
       <div class="brand-badge">P4P</div>
       <div class="brand-info">
-        <h1>แบบบันทึกผลการปฏิบัติงาน P4P</h1>
+        <h1>แบบบันทึกผลการปฏิบัติงาน P4P แพทย์เวชศาสตร์ครอบครัว</h1>
         <p id="docSubInfo">กลุ่มงานเวชกรรมสังคม โรงพยาบาลนราธิวาสราชนครินทร์</p>
       </div>
     </div>
@@ -2729,7 +2729,9 @@ function updateDoctorDisplay() {
   var hasName = !!state.doctor.name;
   document.getElementById("docNameDisplay").textContent = hasName ? state.doctor.name : "＋ ลงทะเบียนผู้ใช้ใหม่";
   document.getElementById("docChipHint").textContent = hasName ? "(แก้ไข)" : "(คลิกที่นี่)";
-  document.getElementById("docSubInfo").textContent = state.doctor.dept + " " + state.doctor.hosp;
+  // หัวหน้าเว็บ: แสดงเฉพาะกลุ่มงาน + โรงพยาบาล (คงที่ทุกคน) — ตำแหน่งของผู้บันทึกอยู่ในหัวชีต 3 บรรทัดแทน
+  document.getElementById("docSubInfo").textContent =
+    (state.doctor.dept || "กลุ่มงานเวชกรรมสังคม") + " " + (state.doctor.hosp || "โรงพยาบาลนราธิวาสราชนครินทร์");
 }
 
 /* โหมด "register" = ผู้ใช้ใหม่ (ยังไม่มีชื่อบนเครื่องนี้) — บันทึกครั้งแรกจะสร้างแท็บในชีตให้เลย */
