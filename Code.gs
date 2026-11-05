@@ -141,7 +141,7 @@ function verifyPinOrNull_(ss, name, pin) {
     return createJsonResponse({ status: "error", code: "NO_USER", message: "ยังไม่มีชื่อ \"" + normalizeName_(name) + "\" ในทะเบียนผู้ใช้ — เปิดเว็บแล้วกดชื่อมุมขวาบนเพื่อลงทะเบียน (ตั้ง PIN)" });
   }
   if (wrongTriesLeft_(name) <= 0) {
-    return createJsonResponse({ status: "error", code: "TOO_MANY_TRIES", message: "กรอก PIN ผิดหลายครั้ง — รอ " + PIN_LOCK_MINUTES + " นาทีแล้วลองใหม่ (หรือให้ผู้ดูแลเคลียร์ช่อง PIN ในแท็บ " + USER_TAB + ")" });
+    return createJsonResponse({ status: "error", code: "TOO_MANY_TRIES", message: "กรอก PIN ผิดหลายครั้ง — รอ " + PIN_LOCK_MINUTES + " นาทีแล้วลองใหม่ (หรือแจ้งผู้ดูแล นพ.ฮัมดี เพื่อรีเซ็ตรหัส)" });
   }
   if (!pinFormatOk_(pin)) {
     return createJsonResponse({ status: "error", code: "BAD_PIN_FORMAT", message: "รูปแบบ PIN ไม่ถูกต้อง (4-10 ตัวอักษร A-Z a-z 0-9)" });
