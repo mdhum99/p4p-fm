@@ -1763,6 +1763,10 @@ details.sync-instructions[open] summary {
       <button class="btn btn-sheet btn-sm" id="headerSaveSheetBtn" title="ส่งข้อมูลเดือนนี้เข้า Google Sheet ทันที">
         <span id="headerSaveBtnText">☁️ บันทึกเข้าชีต</span>
       </button>
+
+      <button class="btn btn-subtle btn-sm" id="headerPullBtn" title="ดึงข้อมูลเดือนนี้จากแท็บของคุณในชีต กลับเข้าเครื่องนี้ (ใช้ตอนเปิดเว็บบนเครื่องใหม่)">
+        <span id="headerPullBtnText">⬇️ ดึงจากชีต</span>
+      </button>
     </div>
   </header>
 
@@ -2154,14 +2158,35 @@ details.sync-instructions[open] summary {
     </div>
 
     <p id="regWelcomeNote" hidden style="margin:0 0 14px; font-size:13.5px; line-height:1.55; background:var(--accent-light); border-radius:8px; padding:10px 12px;">
-      👋 ยินดีต้อนรับ! กรอก <strong>ชื่อ - สกุล</strong> ของคุณ แล้วกดบันทึก —
-      ระบบจะ<strong>สร้างแท็บของคุณใน Google Sheet ให้อัตโนมัติ</strong> พร้อมต่อท้ายด้วยเดือน/ปี
-      ไม่ต้องเข้าไปตั้งชื่อแท็บในชีตเอง ทุกครั้งที่บันทึกงานข้อมูลจะลงแท็บของคุณเอง
+      👋 ยินดีต้อนรับ! เลือก <strong>ชื่อ - สกุล</strong> ของคุณจากรายการ (ถ้าเป็นสมาชิกใหม่ให้เลือก "พิมพ์ชื่อใหม่")
+      แล้ว<strong>ตั้งรหัส PIN ของตัวเอง</strong> — ระบบจะสร้างแท็บของคุณใน Google Sheet ให้อัตโนมัติ
+      และใช้ PIN นี้ป้องกันข้อมูลของแต่ละคน เปิดใช้บนเครื่องอื่นก็แค่เลือกชื่อ + กรอก PIN เดิม ข้อมูลจะดึงกลับมาได้ครบ
     </p>
 
     <div class="form-group">
-      <label for="inputDocName">ชื่อ - สกุล</label>
+      <label for="userSelect">เลือกชื่อของคุณ</label>
+      <select class="form-input" id="userSelect">
+        <option value="">— กำลังโหลดรายชื่อ… —</option>
+        <option value="__new__">➕ พิมพ์ชื่อใหม่ (สมาชิกที่ยังไม่มีในระบบ)</option>
+      </select>
+    </div>
+
+    <div class="form-group" id="docNameGroup">
+      <label for="inputDocName">ชื่อ - สกุล (พิมพ์เอง)</label>
       <input type="text" class="form-input" id="inputDocName">
+    </div>
+
+    <div class="form-group">
+      <label for="inputDocPin" id="docPinLabel">รหัส PIN ของคุณ (ตั้งเอง 4-10 ตัวอักษร/ตัวเลข)</label>
+      <input type="password" class="form-input" id="inputDocPin" autocomplete="off" inputmode="text" placeholder="อย่างน้อย 4 ตัว เช่น 1234 หรือ fm2569">
+      <small id="docPinHint" style="display:block; margin-top:4px; font-size:12px; color:var(--fg-muted);">
+        ใช้เข้าใช้จากเครื่องอื่นได้ · ถ้าลืม ผู้ดูแล (นพ.ฮัมดี) เคลียร์ให้ใหม่ได้จากแท็บ _USERS_PIN_ ในชีต
+      </small>
+    </div>
+
+    <div class="form-group" id="docPinConfirmGroup" hidden>
+      <label for="inputDocPinConfirm">ยืนยันรหัส PIN อีกครั้ง</label>
+      <input type="password" class="form-input" id="inputDocPinConfirm" autocomplete="off">
     </div>
 
     <div class="form-group">
@@ -2181,7 +2206,29 @@ details.sync-instructions[open] summary {
 
     <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px;">
       <button class="btn btn-subtle" id="cancelModalBtn">ยกเลิก</button>
-      <button class="btn btn-primary" id="saveProfileBtn">บันทึกข้อมูล</button>
+      <button class="btn btn-primary" id="saveProfileBtn">เข้าใช้งาน / บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal กันเขียนทับ: เมื่อเครื่องนี้ว่างแต่ในชีตมีข้อมูล -->
+<div class="modal-backdrop" id="overwriteGuardModal" hidden>
+  <div class="modal-content" role="dialog" aria-modal="true" aria-label="แจ้งเตือนข้อมูลในชีต">
+    <div class="modal-header">
+      <h3 style="color:var(--warn-border);">⚠️ ในชีตมีข้อมูลเดิมอยู่แล้ว</h3>
+      <button class="date-nav-btn" id="closeOverwriteModalBtn" aria-label="ปิด">✕</button>
+    </div>
+    <p id="overwriteGuardMsg" style="margin:0 0 16px; font-size:14px; line-height:1.55;">
+      แท็บของคุณในชีตมีข้อมูลอยู่แล้ว แต่ข้อมูลบนเครื่องนี้ว่างเปล่า —
+      ระบบปฏิเสธการส่งขึ้นชีตอัตโนมัติ เพื่อป้องกันข้อมูลในชีตสูญหาย
+    </p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <button class="btn btn-primary" id="overwritePullBtn" style="padding:10px 14px;">
+        ⬇️ ดึงข้อมูลจากชีตกลับมาใส่เครื่องนี้ (แนะนำ)
+      </button>
+      <button class="btn btn-subtle" id="overwriteForceBtn" style="color:var(--danger); border-color:var(--danger-light); padding:8px 12px; font-size:12.5px;">
+        ⚠️ ยืนยันล้างข้อมูลในชีตจริง (เขียนทับด้วยตารางว่าง)
+      </button>
     </div>
   </div>
 </div>
@@ -2191,28 +2238,41 @@ details.sync-instructions[open] summary {
 <script type="text/plain" id="gasCodeSource">
 /**
  * =====================================================================
- *  P4P Family Medicine — Google Apps Script Bridge
+ *  P4P Family Medicine — Google Apps Script Bridge (v2 — PIN auth)
  *  เชื่อมเว็บแอป https://mdhum99.github.io/p4p-fm/ เข้ากับ Google Sheet
  *  "P4P Family Medicine 2569" (1 คน = 1 แท็บ)
  *
- *  การติดตั้ง (ผู้ดูแลทำครั้งเดียว ~3 นาที):
+ *  การติดตั้ง / อัปเดต (ผู้ดูแลทำ ~3 นาที):
  *    1. เปิด Google Sheet กลาง → เมนู "ส่วนขยาย" → "Apps Script"
- *    2. ลบโค้ดเดิมทั้งหมด แล้ววางโค้ดนี้ทับ กดบันทึก (Ctrl+S)
- *    3. กด "ทำให้ใช้งานได้" → "การทำให้ใช้งานได้รายการใหม่" →
- *       ไอคอนเฟือง เลือกประเภท "เว็บแอป"
- *    4. ดำเนินการในฐานะ: ฉัน | ใครมีสิทธิ์เข้าถึง: "ทุกคน"  ← สำคัญ ต้องเป็น "ทุกคน"
- *    5. กด "ทำให้ใช้งานได้" แล้วคัดลอก "URL เว็บแอป"
- *       (https://script.google.com/macros/s/..../exec) ไปกรอกในเว็บแอป
+ *    2. ลบโค้ดเดิมทั้งหมด แล้ววางไฟล์นี้ทับ กดบันทึก (Ctrl+S)
+ *    3. กด "ทำให้ใช้งานได้" → "จัดการการทำให้ใช้งานได้" →
+ *       ดินสอแก้ไข → เลือกเวอร์ชัน "เวอร์ชันใหม่" → "ทำให้ใช้งานได้"
+ *       (URL /exec คงเดิม ไม่ต้องแจ้งทีม)
+ *
+ *  ระบบความปลอดภัยของเวอร์ชันนี้:
+ *    - แต่ละคนมี PIN ของตัวเอง (ตั้งเองครั้งแรก 4-10 ตัวอักษร)
+ *      เก็บเป็น SHA-256 + salt ในแท็บ "_USERS_PIN_" คอลัมน์ B
+ *      ผู้ดูแล (เจ้าของชีต) ลืมรหัสให้ทีม = เคลียร์ช่อง PIN ของคนนั้นได้เลย
+ *    - ทุกคำสั่ง load/save ต้องส่ง pin มาตรวจทุกครั้ง — ไม่มี session ค้าง
+ *    - มีตัวกันเขียนทับ: ถ้าข้อมูลที่ส่งมาว่างทั้งใบ แต่แท็บในชีตมีข้อมูลอยู่
+ *      จะปฏิเสธ (code: OVERWRITE_PREVENTED) กันเครื่องใหม่ลบข้อมูลทีมทิ้ง
+ *    - action "roster" ให้รายชื่ออย่างเดียว (ไม่มี PIN ไม่มีข้อมูล) ไว้ทำ dropdown
  * =====================================================================
  */
 
 // ====== ค่าตั้งต้น ======
 var SPREADSHEET_ID = "1GLvhWVQj174VaZXpHuOSZ3xH2N_efk69UKlrubg0WTk"; // ใช้เมื่อรันเป็น standalone script
-var TEMPLATE_TAB = "Sheet1";   // แท็บต้นแบบ (20 กิจกรรม พร้อมสูตร)
-var OPTIONAL_SECRET = "";      // ถ้าตั้งค่าไม่ว่าง เว็บแอปต้องกรอกรหัสนี้จึงบันทึกได้ (แนะนำให้ตั้ง)
+var TEMPLATE_TAB = "Sheet1";      // แท็บต้นแบบ (20 กิจกรรม พร้อมสูตร)
+var USER_TAB = "_USERS_PIN_";     // แท็บสมุดทะเบียนผู้ใช้ (ชื่อ + PIN hash)
+var OPTIONAL_SECRET = "";         // รหัสผ่านระดับเว็บแอป (ว่าง = ใช้ PIN รายคนแทน)
+var VERSION = "2026-11-05-auth2"; // แก้โค้ดแล้วต้อง redeploy เป็นเวอร์ชันใหม่เสมอ
 
 var FIRST_ROW = 6, ROW_COUNT = 20;   // G6:AK25
 var FIRST_COL = 7, COL_COUNT = 31;
+
+// จำกัดจำนวนครั้งที่กรอก PIN ผิดต่อชื่อ (กันเดารหัส)
+var PIN_MAX_TRIES = 5;
+var PIN_LOCK_MINUTES = 5;
 
 var THAI_MONTHS = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
   "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
@@ -2230,18 +2290,155 @@ function createJsonResponse(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-/** GET — ทดสอบการเชื่อมต่อ / ดูรายชื่อแท็บ */
+/* ---------- ผู้ใช้และ PIN ---------- */
+
+/** อ่านแท็บ _USERS_PIN_ ทั้งหมด → [{name, pinRec, isAdmin, row}] (ข้ามแถวชื่อว่าง) */
+function readUsers_(ss) {
+  var sh = ss.getSheetByName(USER_TAB);
+  if (!sh) return [];
+  var last = Math.max(sh.getLastRow(), 1);
+  var values = sh.getRange(1, 1, last, 6).getValues(); // A ชื่อ, B PIN, C ผู้ดูแล, D หมายเหตุ, E สร้าง, F ใช้ล่าสุด
+  var out = [];
+  for (var i = 1; i < values.length; i++) { // ข้ามหัวตารางแถว 1
+    var name = String(values[i][0] || "").trim();
+    if (!name) continue;
+    out.push({
+      name: name,
+      pinCell: String(values[i][1] || "").trim(),
+      isAdmin: String(values[i][2] || "").trim().toLowerCase() === "admin",
+      note: String(values[i][3] || "").trim(),
+      row: i + 1
+    });
+  }
+  return out;
+}
+
+function findUser_(users, rawName) {
+  var want = normalizeName_(rawName);
+  for (var i = 0; i < users.length; i++) {
+    if (normalizeName_(users[i].name) === want) return users[i];
+  }
+  return null;
+}
+
+/** เทียบชื่อแบบยืดหยุ่น: ตัดช่องว่างซ้ำ + trim (แต่ยังต้องสะกดตรงกัน) */
+function normalizeName_(s) {
+  return String(s || "").replace(/\s+/g, " ").trim();
+}
+
+/** SHA-256 เป็น hex */
+function sha256Hex_(text) {
+  var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, text, Utilities.Charset.UTF_8);
+  var hex = "";
+  for (var i = 0; i < bytes.length; i++) {
+    var b = (bytes[i] + 256) % 256;
+    hex += ("0" + b.toString(16)).slice(-2);
+  }
+  return hex;
+}
+
+/** รูปแบบที่เก็บในคอลัมน์ B: "v1:<salt>:<sha256(salt+pin)>" — ว่าง = ยังไม่ตั้ง PIN */
+function makePinRecord_(pin) {
+  var salt = Utilities.getUuid().replace(/-/g, "").substring(0, 12);
+  return "v1:" + salt + ":" + sha256Hex_(salt + pin);
+}
+
+function parsePinRecord_(cell) {
+  var parts = String(cell || "").split(":");
+  if (parts.length !== 3 || parts[0] !== "v1") return null;
+  return { salt: parts[1], hash: parts[2] };
+}
+
+function pinFormatOk_(pin) {
+  return /^[A-Za-z0-9]{4,10}$/.test(String(pin || ""));
+}
+
+/** นับจำนวนครั้งที่กรอก PIN ผิดของชื่อนี้ (CacheService หมดอายุเอง = ปลดล็อก) */
+function bumpWrongTries_(name) {
+  var key = "RL_" + sha256Hex_(normalizeName_(name));
+  var cache = CacheService.getScriptCache();
+  var n = Number(cache.get(key) || 0) + 1;
+  cache.put(key, String(n), PIN_LOCK_MINUTES * 60);
+  return n;
+}
+
+function clearWrongTries_(name) {
+  CacheService.getScriptCache().remove("RL_" + sha256Hex_(normalizeName_(name)));
+}
+
+function wrongTriesLeft_(name) {
+  var n = Number(CacheService.getScriptCache().get("RL_" + sha256Hex_(normalizeName_(name))) || 0);
+  return Math.max(0, PIN_MAX_TRIES - n);
+}
+
+/** ตรวจ PIN ของชื่อนึง → null = ผ่าน, ไม่งั้นคืน error response */
+function verifyPinOrNull_(ss, name, pin) {
+  var users = readUsers_(ss);
+  var user = findUser_(users, name);
+  if (!user) {
+    return createJsonResponse({ status: "error", code: "NO_USER", message: "ยังไม่มีชื่อ \"" + normalizeName_(name) + "\" ในทะเบียนผู้ใช้ — เปิดเว็บแล้วกดชื่อมุมขวาบนเพื่อลงทะเบียน (ตั้ง PIN)" });
+  }
+  if (wrongTriesLeft_(name) <= 0) {
+    return createJsonResponse({ status: "error", code: "TOO_MANY_TRIES", message: "กรอก PIN ผิดหลายครั้ง — รอ " + PIN_LOCK_MINUTES + " นาทีแล้วลองใหม่ (หรือให้ผู้ดูแลเคลียร์ช่อง PIN ในแท็บ " + USER_TAB + ")" });
+  }
+  if (!pinFormatOk_(pin)) {
+    return createJsonResponse({ status: "error", code: "BAD_PIN_FORMAT", message: "รูปแบบ PIN ไม่ถูกต้อง (4-10 ตัวอักษร A-Z a-z 0-9)" });
+  }
+  if (!user.pinCell) {
+    return createJsonResponse({ status: "error", code: "NO_PIN", message: "ชื่อนี้ยังไม่มี PIN — เปิดเว็บแล้วกดชื่อมุมขวาบนเพื่อตั้ง PIN ก่อน" });
+  }
+  var rec = parsePinRecord_(user.pinCell);
+  if (!rec || sha256Hex_(rec.salt + pin) !== rec.hash) {
+    var left = bumpWrongTries_(name);
+    return createJsonResponse({ status: "error", code: "AUTH_FAIL", message: "PIN ไม่ถูกต้อง (เหลืออีก " + left + " ครั้งก่อนล็อกชั่วคราว)" });
+  }
+  clearWrongTries_(name);
+  return null; // ผ่าน
+}
+
+/** บันทึก/เปลี่ยน PIN ของผู้ใช้ (สร้างแถวใหม่ถ้ายังไม่มีชื่อ) */
+function writePin_(ss, name, pin, note) {
+  var sh = ss.getSheetByName(USER_TAB);
+  if (!sh) {
+    sh = ss.insertSheet(USER_TAB);
+    sh.getRange(1, 1, 1, 6).setValues([["ชื่อ-สกุล", "PIN", "ผู้ดูแล", "หมายเหตุ", "สร้างเมื่อ", "ใช้ล่าสุด"]]);
+    sh.setFrozenRows(1);
+  }
+  var users = readUsers_(ss);
+  var user = findUser_(users, name);
+  var now = new Date();
+  var rec = makePinRecord_(pin);
+  if (user) {
+    sh.getRange(user.row, 2).setValue(rec); // B = PIN record
+    sh.getRange(user.row, 6).setValue(now); // F = ใช้ล่าสุด
+    return { created: false };
+  }
+  var nextRow = sh.getLastRow() + 1;
+  sh.getRange(nextRow, 1, 1, 6).setValues([[normalizeName_(name), rec, "", note || "", now, now]]);
+  return { created: true };
+}
+
+/** อัปเดตเวลา "ใช้ล่าสุด" (ทำงานแบบเงียบ ๆ พลาดแล้วไม่ต้อง fail) */
+function touchLastUsed_(ss, name) {
+  try {
+    var sh = ss.getSheetByName(USER_TAB);
+    if (!sh) return;
+    var user = findUser_(readUsers_(ss), name);
+    if (user) sh.getRange(user.row, 6).setValue(new Date());
+  } catch (err) { /* ยอมให้ข้าม */ }
+}
+
+/* ---------- HTTP entry points ---------- */
+
+/** GET — ทดสอบการเชื่อมต่อ (ไม่เปิดเผยข้อมูล matrix) */
 function doGet(e) {
   try {
-    var secret = (e && e.parameter && e.parameter.secret) || "";
-    if (OPTIONAL_SECRET !== "" && secret !== OPTIONAL_SECRET) {
-      return createJsonResponse({ status: "error", message: "รหัสผ่านไม่ถูกต้อง" });
-    }
     var ss = getSpreadsheet();
     return createJsonResponse({
       status: "ok",
+      version: VERSION,
       spreadsheetName: ss.getName(),
-      tabs: ss.getSheets().map(function (s) { return s.getName(); }),
+      userTabExists: !!ss.getSheetByName(USER_TAB),
       templateExists: !!ss.getSheetByName(TEMPLATE_TAB),
       secretRequired: OPTIONAL_SECRET !== "",
       serverTime: new Date().toISOString()
@@ -2265,11 +2462,80 @@ function doPost(e) {
 
     var action = data.action || "save";
     if (action === "test") return doGet(e);
+    if (action === "roster") return handleRoster(data);
+    if (action === "set_pin") return handleSetPin(data);
+    if (action === "load") return handleLoadP4P(data);
     if (action === "save") return handleSaveP4P(data);
     return createJsonResponse({ status: "error", message: "ไม่รู้จักคำสั่ง: " + action });
   } catch (err) {
     return createJsonResponse({ status: "error", message: "เกิดข้อผิดพลาดในการประมวลผล: " + err });
   }
+}
+
+/** รายชื่อผู้ใช้สำหรับ dropdown (ชื่อ + มี PIN หรือยัง — ไม่มีข้อมูลงาน) */
+function handleRoster(data) {
+  var ss = getSpreadsheet();
+  var users = readUsers_(ss);
+  var list = users.map(function (u) {
+    return { name: u.name, hasPin: !!u.pinCell, isAdmin: u.isAdmin };
+  });
+  return createJsonResponse({
+    status: "ok",
+    action: "roster",
+    version: VERSION,
+    users: list,
+    serverTime: new Date().toISOString()
+  });
+}
+
+/** ตั้ง PIN ครั้งแรก / เข้าใช้งาน (ตรวจ PIN เดิม) / เปลี่ยน PIN (ต้องส่ง currentPin เดิมมาด้วย) */
+function handleSetPin(data) {
+  var name = normalizeName_(data.name);
+  if (!name) return createJsonResponse({ status: "error", message: "ไม่พบชื่อผู้ใช้ (name)" });
+  if (!pinFormatOk_(data.pin)) {
+    return createJsonResponse({ status: "error", code: "BAD_PIN_FORMAT", message: "PIN ต้องเป็นตัวอักษร/ตัวเลข 4-10 ตัว (A-Z a-z 0-9)" });
+  }
+  var ss = getSpreadsheet();
+  var users = readUsers_(ss);
+  var user = findUser_(users, name);
+
+  if (user && user.pinCell) {
+    // มี PIN อยู่แล้ว — แยกสองกรณี:
+    // (1) เปลี่ยนรหัส: ส่ง currentPin มาและไม่เท่ากับ pin ใหม่ → ตรวจ currentPin ก่อนแล้วเขียนทับ
+    // (2) เข้าใช้งานปกติ: ตรวจ pin ที่ส่งมาเทียบกับที่เก็บไว้ (ไม่เขียนทับอะไร)
+    if (data.currentPin && data.currentPin !== data.pin) {
+      var changeCheck = verifyPinOrNull_(ss, name, data.currentPin);
+      if (changeCheck) return changeCheck;
+      writePin_(ss, name, data.pin);
+      clearWrongTries_(name);
+      touchLastUsed_(ss, name);
+      return createJsonResponse({
+        status: "ok", action: "set_pin", version: VERSION,
+        name: name, isNewPin: false, changedPin: true,
+        serverTime: new Date().toISOString()
+      });
+    }
+    var loginCheck = verifyPinOrNull_(ss, name, data.pin);
+    if (loginCheck) return loginCheck;
+    touchLastUsed_(ss, name);
+    return createJsonResponse({
+      status: "ok", action: "set_pin", version: VERSION,
+      name: name, isNewPin: false, changedPin: false,
+      serverTime: new Date().toISOString()
+    });
+  }
+
+  var res = writePin_(ss, name, data.pin);
+  clearWrongTries_(name);
+  return createJsonResponse({
+    status: "ok",
+    action: "set_pin",
+    version: VERSION,
+    name: name,
+    createdUser: res.created,
+    isNewPin: true,
+    serverTime: new Date().toISOString()
+  });
 }
 
 /** ทำความสะอาดชื่อแท็บให้เป็นชื่อที่ Google Sheet ยอมรับ */
@@ -2278,14 +2544,96 @@ function sanitizeTabName(raw) {
   return name.substring(0, 80);
 }
 
+/** ตรวจ pin ฝั่ง load/save — คืน error response ถ้าไม่ผ่าน, null = ผ่าน */
+function authCheck_(ss, data) {
+  return verifyPinOrNull_(ss, data.name, data.pin);
+}
+
+/** แท็บที่ขออ่าน/เขียน ต้องขึ้นต้นด้วยชื่อของผู้ที่ล็อกอินเท่านั้น
+    กันคนรู้ PIN ของตัวเอง ส่ง tabName เป็นชื่อคนอื่นแล้วอ่าน/ทับข้อมูลเขา
+    (เว็บเราตั้งชื่อแท็บเป็น "ชื่อ · เดือน ปี" เสมอ → checks prefix = ชื่อ) */
+function tabOwnershipError_(data, tabName) {
+  var owner = sanitizeTabName(data.name);
+  if (!owner) {
+    return createJsonResponse({ status: "error", code: "NO_NAME", message: "ไม่พบชื่อผู้ใช้ (name)" });
+  }
+  if (tabName !== owner && tabName.indexOf(owner) !== 0) {
+    return createJsonResponse({
+      status: "error",
+      code: "NOT_YOUR_TAB",
+      message: "แท็บ \"" + tabName + "\" ไม่ใช่ของคุณ — ชื่อแท็บต้องขึ้นต้นด้วย \"" + owner + "\" (แก้ได้ในแท็บ ส่งออกข้อมูล)"
+    });
+  }
+  return null;
+}
+
+/** อ่าน matrix 20×31 จากแท็บของผู้ใช้กลับไปให้เว็บ (สำหรับเครื่องใหม่ดึงข้อมูลตัวเอง) */
+function handleLoadP4P(data) {
+  var ss = getSpreadsheet();
+  var authErr = authCheck_(ss, data);
+  if (authErr) return authErr;
+
+  var tabName = sanitizeTabName(data.tabName || data.name);
+  var ownerErr = tabOwnershipError_(data, tabName);
+  if (ownerErr) return ownerErr;
+
+  var targetSheet = ss.getSheetByName(tabName);
+  touchLastUsed_(ss, data.name);
+
+  if (!targetSheet) {
+    return createJsonResponse({
+      status: "ok", action: "load", version: VERSION,
+      tabName: tabName, exists: false, hasData: false,
+      matrix: emptyMatrix_(), totalCells: 0, totalPts: 0,
+      serverTime: new Date().toISOString()
+    });
+  }
+
+  var values = targetSheet.getRange(FIRST_ROW, FIRST_COL, ROW_COUNT, COL_COUNT).getValues();
+  var matrix = [], totalCells = 0;
+  for (var r = 0; r < ROW_COUNT; r++) {
+    var row = [];
+    for (var c = 0; c < COL_COUNT; c++) {
+      var v = values[r][c];
+      if (v === "" || v === null || v === undefined) { row.push(""); continue; }
+      var n = Number(v);
+      if (!isNaN(n) && n > 0) { row.push(n); totalCells++; } else { row.push(""); }
+    }
+    matrix.push(row);
+  }
+  var totalPts = Number(targetSheet.getRange("F5").getValue()) || 0;
+
+  return createJsonResponse({
+    status: "ok", action: "load", version: VERSION,
+    tabName: tabName, exists: true, hasData: totalCells > 0,
+    matrix: matrix, totalCells: totalCells, totalPts: totalPts,
+    serverTime: new Date().toISOString()
+  });
+}
+
+function emptyMatrix_() {
+  var out = [];
+  for (var r = 0; r < ROW_COUNT; r++) {
+    var row = [];
+    for (var c = 0; c < COL_COUNT; c++) row.push("");
+    out.push(row);
+  }
+  return out;
+}
+
 /** บันทึก matrix 20×31 ลงแท็บของผู้ใช้ (สร้างแท็บให้อัตโนมัติถ้ายังไม่มี) */
 function handleSaveP4P(data) {
   var ss = getSpreadsheet();
 
-  var tabName = sanitizeTabName(data.tabName || (data.doctor && data.doctor.name) || "");
+  var authErr = authCheck_(ss, data);
+  if (authErr) return authErr;
+
+  var tabName = sanitizeTabName(data.tabName || data.name);
   if (!tabName) {
     return createJsonResponse({ status: "error", message: "ไม่พบชื่อแท็บ (tabName)" });
   }
+  var ownerErr = tabOwnershipError_(data, tabName);
+  if (ownerErr) return ownerErr;
 
   var targetSheet = ss.getSheetByName(tabName);
   var createdNewTab = false;
@@ -2327,6 +2675,7 @@ function handleSaveP4P(data) {
     });
   }
   var values = [];
+  var incomingCells = 0;
   for (var r = 0; r < ROW_COUNT; r++) {
     var srcRow = matrix[r] || [];
     if (srcRow.length !== COL_COUNT) {
@@ -2346,15 +2695,38 @@ function handleSaveP4P(data) {
           message: "ค่าไม่ถูกต้องที่แถว " + (r + 1) + " วันที่ " + (c + 1) + " (ต้องเป็นตัวเลข 0-9999)"
         });
       }
+      if (n > 0) incomingCells++;
       row.push(n === 0 ? "" : n);
     }
     values.push(row);
   }
 
+  // ===== ตัวกันเขียนทับ (กันเครื่องใหม่ที่ยังไม่มีข้อมูล ลบข้อมูลจริงในชีตทิ้ง) =====
+  // ถ้าข้อมูลที่ส่งมาว่างทั้งใบ แต่แท็บในชีตมีข้อมูลอยู่ → ปฏิเสธ นอกจาก force = true
+  if (incomingCells === 0 && !createdNewTab && !data.force) {
+    var existing = targetSheet.getRange(FIRST_ROW, FIRST_COL, ROW_COUNT, COL_COUNT).getValues();
+    var existingCells = 0;
+    for (var er = 0; er < ROW_COUNT; er++) {
+      for (var ec = 0; ec < COL_COUNT; ec++) {
+        var ev = existing[er][ec];
+        if (ev !== "" && ev !== null && ev !== undefined && Number(ev) > 0) existingCells++;
+      }
+    }
+    if (existingCells > 0) {
+      return createJsonResponse({
+        status: "error",
+        code: "OVERWRITE_PREVENTED",
+        message: "แท็บ \"" + tabName + "\" มีข้อมูลอยู่แล้ว " + existingCells + " ช่อง แต่ข้อมูลที่ส่งมาว่างเปล่า — ระบบไม่ลบให้เอง กด \"ดึงข้อมูลจากชีต\" ในเว็บเพื่อนำข้อมูลกลับเข้าเครื่อง หรือถ้าต้องการล้างจริงให้กดยืนยันในเว็บอีกครั้ง",
+        existingCells: existingCells,
+        tabName: tabName
+      });
+    }
+  }
+
   // เขียนทับทั้งช่วง G6:AK25 ในคำสั่งเดียว
   targetSheet.getRange(FIRST_ROW, FIRST_COL, ROW_COUNT, COL_COUNT).setValues(values);
 
-  // รอสูตรคำนวณ แล้วอ่านผลรวมจากชีตจริง (E = จำนวนรวม, F5 = แต้มรวมทั้งหมด)
+  // รอสูตรคำนวณ แล้วอ่านผลรวมจากชีตจริง (D = อัตราแต้ม, E = จำนวนรวม, F5 = แต้มรวมทั้งหมด)
   SpreadsheetApp.flush();
   var totalPts = Number(targetSheet.getRange("F5").getValue()) || 0;
   var totalCount = 0;
@@ -2362,8 +2734,11 @@ function handleSaveP4P(data) {
   var eValues = targetSheet.getRange("E" + FIRST_ROW + ":E" + lastRow).getValues();
   for (var k = 0; k < eValues.length; k++) totalCount += Number(eValues[k][0]) || 0;
 
+  touchLastUsed_(ss, data.name);
+
   return createJsonResponse({
     status: "success",
+    version: VERSION,
     message: createdNewTab
       ? "สร้างแท็บ '" + tabName + "' และบันทึกข้อมูลเรียบร้อย"
       : "บันทึกข้อมูลลงแท็บ '" + tabName + "' เรียบร้อย",
@@ -3056,19 +3431,136 @@ function updateDoctorDisplay() {
 /* โหมด "register" = ผู้ใช้ใหม่ (ยังไม่มีชื่อบนเครื่องนี้) — บันทึกครั้งแรกจะสร้างแท็บในชีตให้เลย */
 var doctorModalMode = "edit";
 
+/* ---------- PIN session (จำไว้เฉพาะแท็บเบราว์เซอร์นี้ ไม่ลง localStorage) ----------
+   ปิดแท็บ = ต้องกรอก PIN ใหม่ · ไม่มี PIN ใน session = ซิงก์อัตโนมัติจะหยุดรอ */
+var PIN_SESSION_KEY = "p4p_fm_pinsession";
+
+function sessionPin() {
+  try {
+    var raw = sessionStorage.getItem(PIN_SESSION_KEY);
+    if (!raw) return "";
+    var p = JSON.parse(raw);
+    if (!p || !p.pin) return "";
+    return p.name === cleanTabBaseName(state.doctor.name) ? p.pin : "";
+  } catch (e) { return ""; }
+}
+
+function setSessionPin(pin) {
+  try {
+    sessionStorage.setItem(PIN_SESSION_KEY, JSON.stringify({ name: cleanTabBaseName(state.doctor.name), pin: pin }));
+  } catch (e) { /* เบราว์เซอร์บล็อก sessionStorage — ใช้ได้แต่ต้องกรอก PIN ทุกครั้ง */ }
+}
+
+function clearSessionPin() {
+  try { sessionStorage.removeItem(PIN_SESSION_KEY); } catch (e) { /* ข้าม */ }
+}
+
+/* PIN ถูกรูปแบบ = ตัวอักษร/ตัวเลข 4-10 ตัว (ต้องตรงกับที่ Code.gs ตรวจ) */
+function pinFormatOk(pin) {
+  return /^[A-Za-z0-9]{4,10}$/.test(String(pin || ""));
+}
+
+/* GAS เวอร์ชันเก่า (ยังไม่มีระบบ PIN) จะตอบ "ไม่รู้จักคำสั่ง: …" */
+function isLegacyGasError(msg) {
+  return /ไม่รู้จักคำสั่ง/.test(String(msg || ""));
+}
+
+/* รายชื่อที่ดึงจาก GAS (action roster) — เก็บไว้ใช้ทำ dropdown */
+var rosterCache = null;
+
+function normalizeWs(s) {
+  return String(s || "").replace(/\s+/g, " ").trim();
+}
+
+function rosterEntry(name) {
+  if (!rosterCache) return null;
+  var want = normalizeWs(name);
+  for (var i = 0; i < rosterCache.length; i++) {
+    if (normalizeWs(rosterCache[i].name) === want) return rosterCache[i];
+  }
+  return null;
+}
+
+function fillUserSelect(baseNow) {
+  var sel = document.getElementById("userSelect");
+  var html = '<option value="">— เลือกชื่อของคุณ —</option>';
+  var list = rosterCache || [];
+  list.forEach(function (u) {
+    html += '<option value="' + escapeHtml(u.name) + '">' + escapeHtml(u.name) +
+      (u.hasPin ? "" : " (ยังไม่มี PIN — ตั้งใหม่)") + "</option>";
+  });
+  html += '<option value="__new__">➕ พิมพ์ชื่อใหม่ (สมาชิกที่ยังไม่มีในระบบ)</option>';
+  sel.innerHTML = html;
+  if (baseNow && rosterEntry(baseNow)) sel.value = baseNow;
+  else if (baseNow) sel.value = "__new__";
+  else sel.value = "";
+  document.getElementById("docNameGroup").style.display = (sel.value === "__new__") ? "" : "none";
+}
+
+/* ปรับ label ช่อง PIN + แสดง/ซ่อนช่องยืนยัน ตามชื่อที่เลือก */
+function updatePinUiForSelection() {
+  var sel = document.getElementById("userSelect");
+  var grp = document.getElementById("docPinConfirmGroup");
+  var label = document.getElementById("docPinLabel");
+  var isSelNew = sel.value === "__new__";
+  document.getElementById("docNameGroup").style.display = isSelNew ? "" : "none";
+  var entry = isSelNew ? null : rosterEntry(sel.value);
+  if (isSelNew) {
+    label.textContent = "ตั้งรหัส PIN ของคุณ (4-10 ตัวอักษร/ตัวเลข)";
+    grp.hidden = false;
+  } else if (entry && !entry.hasPin) {
+    label.textContent = "ตั้งรหัส PIN ใหม่สำหรับ \"" + sel.value + "\" (4-10 ตัว)";
+    grp.hidden = false;
+  } else if (entry && entry.hasPin) {
+    label.textContent = "รหัส PIN ของ \"" + sel.value + "\"";
+    grp.hidden = true;
+  } else {
+    label.textContent = "รหัส PIN (มีอยู่แล้ว = กรอกเดิม / ยังไม่มี = จะถือเป็นการตั้งใหม่)";
+    grp.hidden = true;
+  }
+}
+
+/* ดึงรายชื่อจาก GAS มาเติม dropdown (พลาดแล้วเงียบ ๆ — ผู้ใช้พิมพ์ชื่อเองได้) */
+function fetchRosterIntoSelect(baseNow) {
+  var sel = document.getElementById("userSelect");
+  if (!gasUrlConfigured()) {
+    rosterCache = null;
+    fillUserSelect(baseNow);
+    return;
+  }
+  gasRequest(state.gas.url, { action: "roster", secret: state.gas.secret })
+    .then(function (data) {
+      rosterCache = (data && data.users) || [];
+      fillUserSelect(baseNow);
+      updatePinUiForSelection();
+    })
+    .catch(function () {
+      rosterCache = null;   // GAS ล่ม/เก่า — ให้พิมพ์ชื่อเองได้เช่นเดิม
+      fillUserSelect(baseNow);
+    });
+}
+
 function openDoctorModal(mode) {
   doctorModalMode = (mode === "register" && !state.registered) ? "register" : "edit";
-  document.getElementById("inputDocName").value = state.doctor.name;
+  var baseNow = cleanTabBaseName(state.doctor.name);
+  document.getElementById("inputDocName").value = baseNow;
   document.getElementById("inputDocPosition").value = state.doctor.position;
   document.getElementById("inputDocDept").value = state.doctor.dept;
   document.getElementById("inputDocHosp").value = state.doctor.hosp;
+  document.getElementById("inputDocPin").value = "";
+  document.getElementById("inputDocPinConfirm").value = "";
   var isReg = doctorModalMode === "register";
-  document.getElementById("profileModalTitle").textContent = isReg ? "👋 ลงทะเบียนผู้ใช้ใหม่" : "แก้ไขข้อมูลผู้บันทึก";
+  document.getElementById("profileModalTitle").textContent = isReg ? "👋 ลงทะเบียน + ตั้ง PIN" : "เข้าใช้งาน / แก้ไขข้อมูลผู้บันทึก";
   document.getElementById("regWelcomeNote").hidden = !isReg;
-  document.getElementById("saveProfileBtn").textContent = isReg ? "🚀 บันทึก และสร้างแท็บของฉันในชีต" : "บันทึกข้อมูล";
+  document.getElementById("saveProfileBtn").textContent = isReg ? "🚀 ตั้ง PIN และเริ่มใช้งาน" : "เข้าใช้งาน / บันทึก";
   document.getElementById("cancelModalBtn").textContent = isReg ? "ยังไม่ต้องการ ใช้ในเครื่องก่อน" : "ยกเลิก";
+  fillUserSelect(baseNow);
+  updatePinUiForSelection();
   document.getElementById("profileModal").hidden = false;
-  setTimeout(function () { document.getElementById("inputDocName").focus(); }, 50);
+  var focusTarget = isReg ? "userSelect" : "inputDocPin";
+  if (document.getElementById("userSelect").value === "__new__") focusTarget = "inputDocName";
+  setTimeout(function () { document.getElementById(focusTarget).focus(); }, 50);
+  fetchRosterIntoSelect(baseNow);
 }
 
 function setupDoctorModal() {
@@ -3088,37 +3580,150 @@ function setupDoctorModal() {
     if (e.target === modal) closeModal();
   });
 
+  document.getElementById("userSelect").addEventListener("change", updatePinUiForSelection);
+
   document.getElementById("saveProfileBtn").addEventListener("click", function () {
-    var name = document.getElementById("inputDocName").value.trim();
-    if (!name) {
-      showToast(doctorModalMode === "register"
-        ? "กรุณากรอกชื่อ - สกุล ของคุณก่อน — ระบบจะใช้ชื่อนี้สร้างแท็บใน Google Sheet ให้อัตโนมัติ"
-        : "กรุณากรอกชื่อ - สกุล");
-      document.getElementById("inputDocName").focus();
+    var sel = document.getElementById("userSelect");
+    var nameInput = document.getElementById("inputDocName");
+    var chosen = (sel.value === "__new__") ? nameInput.value.trim() : sel.value;
+    var pin = document.getElementById("inputDocPin").value.trim();
+    var pinConfirm = document.getElementById("inputDocPinConfirm").value.trim();
+
+    if (!chosen) {
+      showToast(sel.value === "__new__"
+        ? "กรุณาพิมพ์ชื่อ - สกุลของคุณ"
+        : "กรุณาเลือกชื่อของคุณจากรายการ หรือเลือก \"พิมพ์ชื่อใหม่\"");
+      (sel.value === "__new__" ? nameInput : sel).focus();
       return;
     }
-    var wasRegistering = doctorModalMode === "register";
-    state.doctor.name = name;
-    state.doctor.position = document.getElementById("inputDocPosition").value.trim();
-    state.doctor.dept = document.getElementById("inputDocDept").value.trim();
-    state.doctor.hosp = document.getElementById("inputDocHosp").value.trim();
-    if (!state.gas.tabName) {
-      var tabInp = document.getElementById("inputSheetTabName");
-      if (tabInp) tabInp.value = state.doctor.name;
+    if (!pinFormatOk(pin)) {
+      showToast("รหัส PIN ต้องเป็นตัวอักษร/ตัวเลข 4-10 ตัว (A-Z a-z 0-9) — ตั้งใหม่หรือกรอก PIN เดิม");
+      document.getElementById("inputDocPin").focus();
+      return;
     }
-    state.registered = true;
-    saveStorage();
-    updateDoctorDisplay();
-    updateTabNamePreview();
-    updateSheetLikeHeader();
-    closeModal();
-    if (wasRegistering) {
-      showToast("ลงทะเบียนเรียบร้อย — กำลังสร้างแท็บ \"" + effectiveTabName() + "\" ใน Google Sheet…");
-      pushToSheet({ auto: false });   // สร้างแท็บในชีตทันที ผู้ใช้ไม่ต้องเข้าไปสร้างเอง (แม้ยังไม่มีข้อมูล)
-    } else {
-      showToast("บันทึกข้อมูลผู้บันทึกเรียบร้อย");
-      scheduleAutoSync();   // ชื่อ/ตำแหน่งเปลี่ยน = ข้อมูลหัวตารางในชีตเปลี่ยนด้วย
+    var entry = rosterEntry(chosen);
+    var rosterLoaded = !!rosterCache;
+    /* รู้แน่ชัดว่ายังไม่มี PIN จึงบังคับยืนยัน 2 ช่อง — ถ้ารายชื่อโหลดไม่ได้ ให้ผ่านช่องเดียว
+       และให้เซิร์ฟเวอร์ตรวจเอง (กรอกผิด = PIN ไม่ถูกต้อง) */
+    var isNewPin = (sel.value === "__new__") ||
+      (entry && !entry.hasPin) ||
+      (!entry && rosterLoaded);
+    if (isNewPin && pin !== pinConfirm) {
+      showToast("รหัส PIN สองช่องไม่ตรงกัน — กรอกใหม่อีกครั้ง");
+      document.getElementById("inputDocPinConfirm").value = "";
+      document.getElementById("inputDocPinConfirm").focus();
+      return;
     }
+
+    var btn = document.getElementById("saveProfileBtn");
+    var btnText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "⏳ กำลังตรวจสอบ PIN…";
+
+    function finishLocal() {
+      state.doctor.name = chosen;
+      state.doctor.position = document.getElementById("inputDocPosition").value.trim();
+      state.doctor.dept = document.getElementById("inputDocDept").value.trim();
+      state.doctor.hosp = document.getElementById("inputDocHosp").value.trim();
+      if (!state.gas.tabName) {
+        var tabInp = document.getElementById("inputSheetTabName");
+        if (tabInp) tabInp.value = chosen;
+      }
+      state.registered = true;
+      setSessionPin(pin);
+      saveStorage();
+      updateDoctorDisplay();
+      updateTabNamePreview();
+      updateSheetLikeHeader();
+      closeModal();
+      btn.disabled = false;
+      btn.textContent = btnText;
+    }
+
+    if (!gasUrlConfigured()) {
+      finishLocal();
+      showToast("ยังไม่ได้ตั้งค่า URL GAS — บันทึกไว้ในเครื่องก่อน");
+      return;
+    }
+
+    if (isNewPin) {
+      /* ตั้ง PIN ครั้งแรก: การพิมพ์ซ้ำในช่องยืนยันคือการยืนยันรหัสใหม่ (ไม่ใช่การเปลี่ยนรหัสเดิม) */
+      var payload = {
+        action: "set_pin",
+        secret: state.gas.secret,
+        name: chosen,
+        pin: pin,
+        currentPin: ""
+      };
+
+      gasRequest(state.gas.url, payload)
+        .then(function () {
+          finishLocal();
+          showToast("ตั้ง PIN สำเร็จ — กำลังเตรียมแท็บ \"" + effectiveTabName() + "\"…");
+          pushToSheet({ auto: false });   // สร้างแท็บในชีตทันที (ถ้ายังไม่มี)
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          btn.textContent = btnText;
+          if (isLegacyGasError(err.message)) {
+            /* GAS ฝั่งชีตยังเป็นเวอร์ชันเก่า (ยังไม่รู้จัก set_pin) — ยอมรับไว้ก่อนเพื่อไม่ให้ทีมใช้ไม่ได้ */
+            finishLocal();
+            showToast("⚠ ผู้ดูแลยังไม่ได้อัปเดต Apps Script — ระบบ PIN ยังไม่บังคับฝั่งเซิร์ฟเวอร์");
+            return;
+          }
+          if (err.code === "AUTH_FAIL") {
+            var label = document.getElementById("docPinLabel");
+            if (label) label.textContent = "ชื่อนี้มี PIN เดิมอยู่แล้ว — กรอกรหัสเดิมเพื่อเข้าใช้งาน (หรือให้ผู้ดูแลล้าง PIN ในชีตเพื่อตั้งใหม่)";
+          }
+          showToast("ยังเข้าใช้งานไม่สำเร็จ: " + err.message);
+        });
+      return;
+    }
+
+    /* ชื่อที่มี PIN อยู่แล้ว — ตรวจ PIN ทุกครั้งผ่าน action load (ไม่มีผลข้างเคียงต่อข้อมูล) */
+    gasRequest(state.gas.url, {
+      action: "load",
+      secret: state.gas.secret,
+      name: chosen,
+      pin: pin,
+      tabName: effectiveTabNameFor(chosen),
+      month: state.currentMonth,
+      year: state.currentYear
+    })
+      .then(function () {
+        finishLocal();
+        showToast("เข้าใช้งานสำเร็จ — PIN ถูกต้อง");
+        pullFromSheet({ silent: true }); // ดึงข้อมูลเดือนนี้กลับเข้าเครื่อง (ข้ามถ้าเครื่องนี้มีข้อมูลอยู่แล้ว)
+      })
+      .catch(function (err) {
+        if (err.code === "NO_PIN") {
+          /* ยังไม่มี PIN ในชีต (ผู้ดูแลล้างให้ = ตั้งใหม่ได้) — ยิง set_pin แบบตั้งครั้งแรก */
+          gasRequest(state.gas.url, {
+            action: "set_pin",
+            secret: state.gas.secret,
+            name: chosen,
+            pin: pin,
+            currentPin: ""
+          }).then(function () {
+            finishLocal();
+            showToast("ตั้ง PIN ใหม่สำเร็จ (ผู้ดูแลล้าง PIN เดิมให้แล้ว)");
+            pullFromSheet({ silent: true });
+          }).catch(function (e2) {
+            btn.disabled = false;
+            btn.textContent = btnText;
+            showToast("ตั้ง PIN ไม่สำเร็จ: " + e2.message);
+          });
+          return;
+        }
+        btn.disabled = false;
+        btn.textContent = btnText;
+        if (isLegacyGasError(err.message)) {
+          finishLocal();
+          showToast("⚠ ผู้ดูแลยังไม่ได้อัปเดต Apps Script — เข้าใช้งานแบบไม่ตรวจ PIN");
+          return;
+        }
+        showToast("ยังเข้าใช้งานไม่สำเร็จ: " + err.message);
+      });
   });
 }
 
@@ -3845,7 +4450,12 @@ function cleanTabBaseName(raw) {
 
 /* ชื่อแท็บจริงที่ใช้ส่งขึ้นชีต = ชื่อคน + เดือน/ปีที่กำลังดูอยู่ */
 function effectiveTabName() {
-  var base = cleanTabBaseName(state.gas.tabName || state.doctor.name || "");
+  return effectiveTabNameFor(state.gas.tabName || state.doctor.name || "");
+}
+
+/* ชื่อแท็บของ "ชื่อที่ระบุ" (ใช้ตอนล็อกอินตรวจ PIN ก่อนที่ state.doctor.name จะเปลี่ยน) */
+function effectiveTabNameFor(rawName) {
+  var base = cleanTabBaseName(rawName || "");
   if (!base) return "";
   return base + " · " + tabMonthLabel(state.currentMonth, state.currentYear);
 }
@@ -3906,7 +4516,10 @@ function gasRequest(url, payload, keepalive) {
       throw new Error("ตอบกลับไม่ใช่ JSON: " + text.substring(0, 120));
     }
     if (data.status !== "success" && data.status !== "ok") {
-      throw new Error(data.message || "ไม่ทราบสาเหตุ");
+      var err = new Error(data.message || "ไม่ทราบสาเหตุ");
+      err.code = data.code || "";   // เช่น OVERWRITE_PREVENTED, AUTH_FAIL, NO_PIN
+      err.data = data;
+      throw err;
     }
     return data;
   });
@@ -4107,6 +4720,20 @@ function pushToSheet(opts) {
     return;
   }
 
+  /* ต้องมี PIN ของชื่อนี้อยู่ในแท็บเบราว์เซอร์ก่อน จึงจะเขียนขึ้นชีตได้ (กันเครื่องใหม่ลบข้อมูลจริง) */
+  if (o.skipPinCheck !== true) {
+    var pinNow = sessionPin();
+    if (!pinNow) {
+      if (o.auto) {
+        setSyncBadge("badge-err", "🔒 รอ PIN", "ยังไม่ได้กรอก PIN ในเบราว์เซอร์นี้ — คลิกชื่อผู้บันทึกมุมขวาบน แล้วกรอก PIN ข้อมูลในเครื่องยังปลอดภัย");
+        return;
+      }
+      openDoctorModal("edit");
+      showToast("กรอก PIN ของคุณก่อน จึงจะบันทึกเข้าชีตได้");
+      return;
+    }
+  }
+
   if (pushInFlight) { pushQueued = true; return; }
   if (o.auto && matrixSignature() === lastPushedSignature) { syncBadgeIdle(); return; }
 
@@ -4129,6 +4756,10 @@ function pushToSheet(opts) {
     tabName: tabName,
     month: state.currentMonth,
     year: state.currentYear,
+    // PIN + ชื่อ = บัตรผ่านประจำตัวของแท็บนี้ ตรวจทุกครั้งฝั่ง Code.gs (ไม่มี session ค้าง)
+    name: cleanTabBaseName(state.doctor.name),
+    pin: sessionPin(),
+    force: !!o.force,   // true = ผู้ใช้กดยืนยันล้างข้อมูลในชีตแล้ว (ข้ามตัวกันเขียนทับ)
     // ส่งกลุ่มงานแบบไม่มีคำว่า "กลุ่มงาน" นำหน้า เพราะ Code.gs ใส่คำนี้ให้เอง (กันซ้ำ "กลุ่มงาน กลุ่มงาน…" ใน A3)
     doctor: {
       name: state.doctor.name,
@@ -4167,6 +4798,48 @@ function pushToSheet(opts) {
       if (!o.auto) showToast("บันทึกเข้าชีตแท็บ \"" + data.tabName + "\" สำเร็จ — " + pts + " แต้ม");
     })
     .catch(function (err) {
+      /* ผู้ใช้ใหม่/เครื่องใหม่พยายามส่งตารางว่างทับข้อมูลจริงในชีต — หยุด retry แล้วเปิดหน้าต่างให้เลือก */
+      if (err.code === "OVERWRITE_PREVENTED") {
+        autoSyncRetries = 0;
+        clearTimeout(autoSyncRetryTimer);
+        autoSyncRetryTimer = null;
+        if (o.auto) {
+          setSyncBadge("badge-err", "⛔ กันเขียนทับ", "ในชีตมีข้อมูลอยู่แล้ว แต่ข้อมูลเครื่องนี้ว่าง — ระบบไม่ลบทับอัตโนมัติ เปิดแท็บ \"ส่งออกข้อมูล\" เพื่อดึงข้อมูลกลับ");
+          openOverwriteGuardModal(err);
+        } else {
+          openOverwriteGuardModal(err);
+        }
+        setGasStatus('<span class="gas-status-err">หยุดส่งเพื่อกันข้อมูลสูญ</span> — ' + escapeHtml(err.message), "");
+        return;
+      }
+      /* PIN ผิด / ไม่มี PIN / ถูกล็อก — ปลด session ให้กรอกใหม่ (หยุด retry วนลูปด้วย) */
+      if (err.code === "AUTH_FAIL" || err.code === "NO_PIN" || err.code === "NO_USER" || err.code === "TOO_MANY_TRIES") {
+        autoSyncRetries = 0;
+        clearTimeout(autoSyncRetryTimer);
+        autoSyncRetryTimer = null;
+        clearSessionPin();
+        if (o.auto) {
+          setSyncBadge("badge-err", "🔒 PIN ไม่ผ่าน", err.message + " — คลิกชื่อผู้บันทึกมุมขวาบนเพื่อกรอก PIN ใหม่ ข้อมูลยังปลอดภัยในเครื่อง");
+        } else {
+          showToast(err.message + " — ข้อมูลยังปลอดภัยในเครื่อง");
+        }
+        setGasStatus('<span class="gas-status-err">ยืนยันตัวตนไม่ผ่าน</span> — ' + escapeHtml(err.message) +
+          '<br><small>ข้อมูลยังปลอดภัยในเครื่องนี้ — คลิกชื่อผู้บันทึกมุมขวาบนเพื่อกรอก PIN ใหม่</small>', "");
+        return;
+      }
+      /* GAS ฝั่งชีตยังเป็นเวอร์ชันเก่า (ยังไม่มีระบบ PIN) — แจ้งให้ผู้ดูแลอัปเดต แต่หยุด retry กันวนลูป */
+      if (isLegacyGasError(err.message)) {
+        autoSyncRetries = 0;
+        clearTimeout(autoSyncRetryTimer);
+        autoSyncRetryTimer = null;
+        if (o.auto) {
+          setSyncBadge("badge-err", "⚠ GAS เวอร์ชันเก่า", "Apps Script ฝั่งชีตยังเป็นเวอร์ชันเก่า (ไม่รู้จักคำสั่ง save) — ให้ผู้ดูแลวาง Code.gs ใหม่แล้ว Deploy");
+        } else {
+          showToast("GAS ฝั่งชีตยังเป็นเวอร์ชันเก่า — ให้ผู้ดูแลวาง Code.gs ใหม่แล้ว Deploy (ดูวิธีในแท็บ ส่งออกข้อมูล)");
+        }
+        setGasStatus('<span class="gas-status-err">Apps Script เวอร์ชันเก่า</span> — ' + escapeHtml(err.message), "");
+        return;
+      }
       if (o.auto) {
         autoSyncRetries++;
         scheduleAutoSyncRetry(err.message);
@@ -4194,6 +4867,160 @@ function saveToSheet(triggerBtn) {
   pushToSheet({ auto: false, triggerBtn: triggerBtn });
 }
 
+/* ---------- ⬇️ ดึงข้อมูลจากชีตกลับเข้าเครื่อง (เครื่องใหม่/ล้างเครื่อง ใช้ PIN เดิมดึงข้อมูลตัวเอง) ---------- */
+
+/* นับจำนวนช่องที่มีค่าในเดือน/ปีที่ระบุ จากข้อมูลในเครื่อง (0 = เครื่องนี้ยังว่างสำหรับเดือนนั้น) */
+function localMonthCellCount(month, year) {
+  var bucket = state.store[periodKey(month, year)] || {};
+  var n = 0;
+  Object.keys(bucket).forEach(function (actId) {
+    var days = bucket[actId] || {};
+    Object.keys(days).forEach(function (d) {
+      if (Number(days[d]) > 0) n++;
+    });
+  });
+  return n;
+}
+
+/* เขียน matrix 20×31 (ค่าจากชีต G6:AK25) ลง store ของเดือน/ปีที่ระบุ — เฉพาะค่าที่ > 0
+   ข้ามกิจกรรมที่ไม่รู้จักออกจากแถว เพื่อไม่ให้ค่าตกค้างไปอยู่ผิดแถว */
+function applyMatrixFromSheet(matrix, month, year) {
+  var k = periodKey(month, year);
+  if (!state.store[k]) state.store[k] = {};
+  ACTIVITIES.forEach(function (a) {
+    state.store[k][a.id] = {};
+  });
+  var cells = 0;
+  for (var r = 0; r < ACTIVITIES.length && r < matrix.length; r++) {
+    var actId = ACTIVITIES[r].id;
+    var row = matrix[r] || [];
+    for (var c = 0; c < 31; c++) {
+      var n = Number(row[c]);
+      if (!isNaN(n) && n > 0) {
+        state.store[k][actId][c + 1] = n;
+        cells++;
+      }
+    }
+    if (Object.keys(state.store[k][actId]).length === 0) delete state.store[k][actId];
+  }
+  if (!Object.keys(state.store[k]).length) delete state.store[k];
+  return cells;
+}
+
+/* ดึงข้อมูลเดือนปัจจุบันจากแท็บของผู้ใช้ — silent:true = ไม่เด้ง toast (เรียกตอนล็อกอิน) */
+function pullFromSheet(opts) {
+  var o = opts || {};
+  readGasInputs();
+  if (!gasUrlConfigured()) {
+    if (!o.silent) showToast("ยังไม่ได้ตั้งค่า Google Apps Script — ดึงข้อมูลจากชีตไม่ได้");
+    return;
+  }
+  var base = cleanTabBaseName(state.doctor.name);
+  var pin = sessionPin();
+  if (!base) {
+    if (!o.silent) showToast("ยังไม่มีชื่อผู้บันทึก — คลิกชื่อมุมขวาบนเพื่อเลือกรายชื่อและกรอก PIN ก่อน");
+    return;
+  }
+  if (!pin) {
+    if (!o.silent) { openDoctorModal("edit"); showToast("กรอก PIN ของคุณก่อน จึงจะดึงข้อมูลจากชีตได้"); }
+    return;
+  }
+
+  /* โหมดเงียบ (หลังล็อกอิน) = เดือนนี้เครื่องมีข้อมูลอยู่แล้วให้ข้าม กันข้อมูลที่ยังไม่ได้ส่งถูกทับ */
+  if (o.silent && localMonthCellCount(state.currentMonth, state.currentYear) > 0) return;
+
+  var tabName = effectiveTabName();
+  var btn = document.getElementById("headerPullBtn");
+  var label = document.getElementById("headerPullBtnText");
+  var oldLabel = label ? label.textContent : "";
+  if (btn) btn.disabled = true;
+  if (label) label.textContent = "⏳ กำลังดึง…";
+
+  gasRequest(state.gas.url, {
+    action: "load",
+    secret: state.gas.secret,
+    name: base,
+    pin: pin,
+    tabName: tabName,
+    month: state.currentMonth,
+    year: state.currentYear
+  })
+    .then(function (data) {
+      var cells = applyMatrixFromSheet(data.matrix || [], state.currentMonth, state.currentYear);
+      lastPushedSignature = "";
+      saveStorage();
+      renderAll();
+      updateSheetLikeHeader();
+      syncBadgeIdle();
+      if (data.exists === false || data.hasData === false) {
+        if (!o.silent) showToast("แท็บ \"" + tabName + "\" ยังไม่มีข้อมูลในชีต — บันทึกจากเครื่องนี้ขึ้นชีตได้เลย");
+      } else {
+        setGasStatus('<span class="gas-status-ok">ดึงข้อมูลจากชีตสำเร็จ</span> — แท็บ <strong>' + escapeHtml(tabName) +
+          '</strong> · <strong>' + fmtNum(cells, 0) + '</strong> รายการ · แต้มรวมในชีต <strong>' +
+          fmtNum(data.totalPts || 0) + "</strong>", "");
+        if (!o.silent) showToast("ดึงข้อมูลจากชีตแล้ว — " + cells + " รายการ · " + fmtNum(data.totalPts || 0) + " แต้ม");
+      }
+    })
+    .catch(function (err) {
+      if (err.code === "AUTH_FAIL" || err.code === "NO_PIN" || err.code === "NO_USER" || err.code === "TOO_MANY_TRIES") {
+        clearSessionPin();
+        openDoctorModal("edit");
+      }
+      if (!o.silent) showToast("ดึงข้อมูลจากชีตไม่สำเร็จ: " + err.message);
+    })
+    .then(function () {
+      if (btn) btn.disabled = false;
+      if (label) label.textContent = oldLabel;
+    });
+}
+
+/* หน้าต่าง "ในชีตมีข้อมูลเดิมอยู่แล้ว" — ให้เลือกดึงกลับ (แนะนำ) หรือยืนยันล้างจริง */
+function openOverwriteGuardModal(err) {
+  var d = (err && err.data) || {};
+  var msg = document.getElementById("overwriteGuardMsg");
+  var tabName = d.tabName || effectiveTabName();
+  msg.innerHTML = "แท็บ <strong>" + escapeHtml(tabName) + "</strong> มีข้อมูลอยู่แล้ว <strong>" +
+    escapeHtml(String(d.existingCells || "")) + "</strong> ช่อง แต่ข้อมูลบนเครื่อง " +
+    (d.machineName ? "<strong>" + escapeHtml(d.machineName) + "</strong> " : "เครื่องนี้") +
+    "ว่างเปล่า — ระบบไม่ลบให้เอง" +
+    "<br><br>แนะนำกดปุ่มแรก เพื่อดึงข้อมูลเดิมกลับมาใส่เครื่องนี้ แล้วแก้ไขต่อได้ทันที";
+  document.getElementById("overwriteGuardModal").hidden = false;
+}
+
+function closeOverwriteGuardModal() {
+  document.getElementById("overwriteGuardModal").hidden = true;
+}
+
+function setupOverwriteGuardModal() {
+  var modal = document.getElementById("overwriteGuardModal");
+  document.getElementById("closeOverwriteModalBtn").addEventListener("click", closeOverwriteGuardModal);
+  modal.addEventListener("click", function (e) {
+    if (e.target === modal) closeOverwriteGuardModal();
+  });
+  document.getElementById("overwritePullBtn").addEventListener("click", function () {
+    closeOverwriteGuardModal();
+    pullFromSheet({});
+  });
+  /* ยืนยัน 2 ขั้น (ไม่มี confirm() ในหน้าเว็บนี้) — กดอีกครั้งจึงจะล้างจริง */
+  var forceBtn = document.getElementById("overwriteForceBtn");
+  var forceArmed = null;
+  forceBtn.addEventListener("click", function () {
+    if (forceArmed) {
+      clearTimeout(forceArmed);
+      forceArmed = null;
+      forceBtn.textContent = "⚠️ ยืนยันล้างข้อมูลในชีตจริง (เขียนทับด้วยตารางว่าง)";
+      closeOverwriteGuardModal();
+      pushToSheet({ auto: false, force: true, skipPinCheck: false });
+      return;
+    }
+    forceBtn.textContent = "กดอีกครั้งเพื่อยืนยันล้างข้อมูลในชีต";
+    forceArmed = setTimeout(function () {
+      forceArmed = null;
+      forceBtn.textContent = "⚠️ ยืนยันล้างข้อมูลในชีตจริง (เขียนทับด้วยตารางว่าง)";
+    }, 5000);
+  });
+}
+
 function escapeHtml(s) {
   return String(s === undefined || s === null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -4212,6 +5039,13 @@ function setupGasActions() {
   document.getElementById("headerSaveSheetBtn").addEventListener("click", function () {
     saveToSheet(document.getElementById("headerSaveSheetBtn"));
   });
+
+  /* ปุ่ม "ดึงจากชีต" บนหัวเว็บ — สำหรับเครื่องใหม่ดึงข้อมูลเดือนนี้กลับ */
+  document.getElementById("headerPullBtn").addEventListener("click", function () {
+    pullFromSheet({});
+  });
+
+  setupOverwriteGuardModal();
 
   ["inputGasUrl", "inputSheetTabName", "inputGasSecret"].forEach(function (id) {
     document.getElementById(id).addEventListener("change", readGasInputs);
