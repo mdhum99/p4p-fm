@@ -2426,7 +2426,7 @@ var GAS_CONFIG_KEY = "p4p_fm_gas_v1";
 /* URL เว็บแอป Google Apps Script ของกลุ่มงาน —
    วาง URL ที่ลงท้ายด้วย /exec ที่นี่ครั้งเดียว ผู้ใช้ทุกคนจะได้ค่าเริ่มต้นนี้อัตโนมัติ
    ผู้ใช้ยังแก้เป็น URL อื่นของตัวเองในแท็บส่งออกข้อมูลได้ (ค่าที่ตั้งเองจะทับค่านี้) */
-var DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbz3HyfXwRpOyxOYf-cZIkaC_k4giSFocBpYcSA9YAFLgkztp7oTi4B3Vf3Fe9oA5ReT/exec";
+var DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbzcSsq9g4PNjM7GYWfcyk54TqEzwtFG5Gu3jfo4tiNwoSd0mecNUE3tN1T2pzpiQLpD/exec";
 
 /* เริ่มต้นที่เดือนปัจจุบัน (เช่น เปิดครั้งแรกในเดือน พ.ย. 2569 ก็จะเริ่มที่ 11/2569)
    ถ้าผู้ใช้เคยเลือกเดือนอื่นไว้ ระบบจะคืนค่าเดิมจาก localStorage
@@ -2509,9 +2509,25 @@ function loadStorage() {
     // URL ค่าเริ่มต้นของกลุ่มงาน — ใช้เมื่อเครื่องนี้ยังไม่เคยตั้ง URL เอง
     // (อยู่หลังการอ่านทั้งสองคีย์ และอยู่นอก if(raw) เพื่อให้เครื่องใหม่ที่ยังว่างได้ค่านี้ด้วย)
     if (!state.gas.url && DEFAULT_GAS_URL) state.gas.url = DEFAULT_GAS_URL.trim();
+    migrateLegacyGasUrl();
     migrateActivityInsert17();
   } catch (e) {
     console.warn("อ่านข้อมูลที่บันทึกไว้ไม่ได้:", e);
+  }
+}
+
+var LEGACY_GAS_URLS = [
+  "https://script.google.com/macros/s/AKfycbz3HyfXwRpOyxOYf-cZIkaC_k4giSFocBpYcSA9YAFLgkztp7oTi4B3Vf3Fe9oA5ReT/exec"
+];
+function migrateLegacyGasUrl() {
+  var cur = state.gas.url;
+  if (!cur) return;
+  for (var i = 0; i < LEGACY_GAS_URLS.length; i++) {
+    if (cur === LEGACY_GAS_URLS[i]) {
+      state.gas.url = DEFAULT_GAS_URL.trim();
+      console.log("อัปเดต URL Apps Script จากเวอร์ชันเก่า (19 แถว) เป็นเวอร์ชันใหม่ (20 แถว)");
+      return;
+    }
   }
 }
 
