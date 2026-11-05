@@ -8,137 +8,141 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
 /* Design Plan:
- * Palette: Clinical Teal & Slate - emerald-teal primary on cool slate neutrals, semantic colors kept separate from accent
- * Typography: Sarabun (Thai official document standard) for UI, JetBrains Mono with tabular-nums for all figures
- * Layout: four working views - quick daily entry with calendar, full 31-day matrix mirroring the sheet,
- *         analytics (trend + rankings), and a clipboard-based Google Sheets sync
+ * Palette: Claude / Anthropic Warm Editorial — Signature Terracotta (#CC6B49 / #E07A5F)
+ *          on warm oat/cream paper (#FAF9F5) and deep warm espresso (#191816)
+ * Typography: Lora serif for editorial headings & titles, Sarabun for clean official Thai UI,
+ *             JetBrains Mono with tabular-nums for all figures
+ * Layout: Four views — Daily quick log, 31-day sheet-like matrix, stats/trends, Google Sheets sync
  */
 :root {
-  --bg: #f8fafc;
-  --bg-card: #ffffff;
-  --bg-subtle: #f1f5f9;
-  --bg-input: #ffffff;
-  --fg: #0f172a;
-  --fg-muted: #475569;
-  --fg-subtle: #64748b;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --primary: #0f766e;
-  --primary-hover: #115e59;
-  --primary-light: #ccfbf1;
-  --primary-text: #042f2e;
-  --accent: #2563eb;
-  --accent-light: #dbeafe;
-  --accent-text: #1e40af;
-  --sheet: #107c41;
-  --sheet-hover: #0b5c30;
-  --danger: #dc2626;
-  --danger-light: #fee2e2;
-  --sun-bg: #fef2f2;
-  --sun-fg: #991b1b;
-  --sun-pill: #b91c1c;
-  --sat-bg: #faf5ff;
-  --sat-fg: #581c87;
-  --sat-pill: #6b21a8;
-  --holiday-bg: #fee2e2;
-  --holiday-fg: #b91c1c;
-  --holiday-border: #fca5a5;
-  --holiday-pill: #991b1b;
-  --holiday-dot: #dc2626;
-  --warn-bg: #fef3c7;
-  --warn-fg: #92400e;
-  --warn-border: #d97706;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --bg: #FAF9F5;
+  --bg-card: #FFFFFF;
+  --bg-subtle: #F3F1EC;
+  --bg-input: #FFFFFF;
+  --fg: #1F1E1D;
+  --fg-muted: #6B6863;
+  --fg-subtle: #949088;
+  --border: #E5E3DC;
+  --border-strong: #CDCAC0;
+  --primary: #CC6B49;
+  --primary-hover: #B85A39;
+  --primary-light: #F7EAE4;
+  --primary-text: #7A341E;
+  --accent: #D97757;
+  --accent-light: #F6EDE8;
+  --accent-text: #8A4129;
+  --sheet: #2D6A4F;
+  --sheet-hover: #1B4332;
+  --danger: #C0392B;
+  --danger-light: #FBEBE8;
+  --sun-bg: #FDF3F1;
+  --sun-fg: #A93226;
+  --sun-pill: #C0392B;
+  --sat-bg: #F6F3F7;
+  --sat-fg: #6C5B7B;
+  --sat-pill: #7B6888;
+  --holiday-bg: #FBEBE8;
+  --holiday-fg: #A93226;
+  --holiday-border: #F1C3BA;
+  --holiday-pill: #C0392B;
+  --holiday-dot: #CC6B49;
+  --warn-bg: #FEF7EE;
+  --warn-fg: #925313;
+  --warn-border: #E8A856;
+  --shadow-sm: 0 1px 3px 0 rgba(31, 30, 29, 0.05);
+  --shadow-md: 0 4px 14px -2px rgba(31, 30, 29, 0.08), 0 2px 6px -1px rgba(31, 30, 29, 0.04);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
   --radius-full: 9999px;
-  --font-main: 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Lora', Georgia, 'Sarabun', serif;
+  --font-main: 'Sarabun', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #090d16;
-    --bg-card: #111827;
-    --bg-subtle: #1f2937;
-    --bg-input: #172033;
-    --fg: #f3f4f6;
-    --fg-muted: #9ca3af;
-    --fg-subtle: #6b7280;
-    --border: #2d3748;
-    --border-strong: #4b5563;
-    --primary: #14b8a6;
-    --primary-hover: #2dd4bf;
-    --primary-light: #042f2e;
-    --primary-text: #ccfbf1;
-    --accent: #3b82f6;
-    --accent-light: #1e293b;
-    --accent-text: #93c5fd;
-    --sheet: #16a34a;
-    --sheet-hover: #22c55e;
-    --danger: #ef4444;
-    --danger-light: #450a0a;
-    --sun-bg: #2b1216;
-    --sun-fg: #fca5a5;
-    --sun-pill: #f87171;
-    --sat-bg: #20132b;
-    --sat-fg: #d8b4fe;
-    --sat-pill: #c084fc;
-    --holiday-bg: #3f1717;
-    --holiday-fg: #fca5a5;
-    --holiday-border: #7f1d1d;
-    --holiday-pill: #f87171;
-    --holiday-dot: #ef4444;
-    --warn-bg: #451a03;
-    --warn-fg: #fcd34d;
-    --warn-border: #b45309;
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    --bg: #191816;
+    --bg-card: #242220;
+    --bg-subtle: #2F2D2A;
+    --bg-input: #1D1C1A;
+    --fg: #EDEAE4;
+    --fg-muted: #A8A49C;
+    --fg-subtle: #75726B;
+    --border: #383632;
+    --border-strong: #4E4B45;
+    --primary: #E07A5F;
+    --primary-hover: #E88E75;
+    --primary-light: #3D261E;
+    --primary-text: #F7D7CE;
+    --accent: #E58B6F;
+    --accent-light: #362620;
+    --accent-text: #FADCCF;
+    --sheet: #3E8A63;
+    --sheet-hover: #4FA277;
+    --danger: #E56B6F;
+    --danger-light: #3E1E20;
+    --sun-bg: #30191B;
+    --sun-fg: #F5A9AB;
+    --sun-pill: #E56B6F;
+    --sat-bg: #281D2E;
+    --sat-fg: #D4B2E8;
+    --sat-pill: #BA8BD6;
+    --holiday-bg: #381D20;
+    --holiday-fg: #F5A9AB;
+    --holiday-border: #6E3338;
+    --holiday-pill: #E56B6F;
+    --holiday-dot: #E07A5F;
+    --warn-bg: #362512;
+    --warn-fg: #FCD692;
+    --warn-border: #8A5B1D;
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.5);
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #090d16;
-  --bg-card: #111827;
-  --bg-subtle: #1f2937;
-  --bg-input: #172033;
-  --fg: #f3f4f6;
-  --fg-muted: #9ca3af;
-  --fg-subtle: #6b7280;
-  --border: #2d3748;
-  --border-strong: #4b5563;
-  --primary: #14b8a6;
-  --primary-hover: #2dd4bf;
-  --primary-light: #042f2e;
-  --primary-text: #ccfbf1;
-  --accent: #3b82f6;
-  --accent-light: #1e293b;
-  --accent-text: #93c5fd;
-  --sheet: #16a34a;
-  --sheet-hover: #22c55e;
-  --danger: #ef4444;
-  --danger-light: #450a0a;
-  --sun-bg: #2b1216;
-  --sun-fg: #fca5a5;
-  --sun-pill: #f87171;
-  --sat-bg: #20132b;
-  --sat-fg: #d8b4fe;
-  --sat-pill: #c084fc;
-  --holiday-bg: #3f1717;
-  --holiday-fg: #fca5a5;
-  --holiday-border: #7f1d1d;
-  --holiday-pill: #f87171;
-  --holiday-dot: #ef4444;
-  --warn-bg: #451a03;
-  --warn-fg: #fcd34d;
-  --warn-border: #b45309;
+  --bg: #191816;
+  --bg-card: #242220;
+  --bg-subtle: #2F2D2A;
+  --bg-input: #1D1C1A;
+  --fg: #EDEAE4;
+  --fg-muted: #A8A49C;
+  --fg-subtle: #75726B;
+  --border: #383632;
+  --border-strong: #4E4B45;
+  --primary: #E07A5F;
+  --primary-hover: #E88E75;
+  --primary-light: #3D261E;
+  --primary-text: #F7D7CE;
+  --accent: #E58B6F;
+  --accent-light: #362620;
+  --accent-text: #FADCCF;
+  --sheet: #3E8A63;
+  --sheet-hover: #4FA277;
+  --danger: #E56B6F;
+  --danger-light: #3E1E20;
+  --sun-bg: #30191B;
+  --sun-fg: #F5A9AB;
+  --sun-pill: #E56B6F;
+  --sat-bg: #281D2E;
+  --sat-fg: #D4B2E8;
+  --sat-pill: #BA8BD6;
+  --holiday-bg: #381D20;
+  --holiday-fg: #F5A9AB;
+  --holiday-border: #6E3338;
+  --holiday-pill: #E56B6F;
+  --holiday-dot: #E07A5F;
+  --warn-bg: #362512;
+  --warn-fg: #FCD692;
+  --warn-border: #8A5B1D;
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.5);
   color-scheme: dark;
 }
 
@@ -213,7 +217,7 @@ textarea:focus-visible {
   width: 44px;
   height: 44px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--primary) 0%, #0284c7 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, #A85234 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -222,13 +226,16 @@ textarea:focus-visible {
   font-size: 15px;
   letter-spacing: 0.02em;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(204, 107, 73, 0.28);
 }
 
 .brand-info h1 {
-  font-size: 18px;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 600;
   color: var(--fg);
   line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 .brand-info p {
@@ -341,7 +348,7 @@ textarea:focus-visible {
 
 .kpi-card.k-accent::after { background: var(--accent); }
 .kpi-card.k-sheet::after { background: var(--sheet); }
-.kpi-card.k-warn::after { background: #d97706; }
+.kpi-card.k-warn::after { background: var(--warn-border); }
 
 .kpi-label {
   font-size: 13px;
@@ -350,11 +357,13 @@ textarea:focus-visible {
 }
 
 .kpi-value {
-  font-size: 26px;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 600;
   color: var(--fg);
-  line-height: 1.2;
+  line-height: 1.15;
   margin-top: 2px;
+  letter-spacing: -0.02em;
 }
 
 .kpi-sub {
@@ -396,6 +405,7 @@ textarea:focus-visible {
 .tab-btn.active {
   background: var(--primary);
   color: #ffffff;
+  box-shadow: 0 1px 4px rgba(204, 107, 73, 0.28);
 }
 
 /* Views */
@@ -431,7 +441,9 @@ textarea:focus-visible {
 }
 
 .date-header strong {
-  font-size: 15px;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .date-nav-btn {
@@ -836,8 +848,10 @@ textarea:focus-visible {
 }
 
 .selected-day-heading h2 {
+  font-family: var(--font-serif);
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .selected-day-heading span {
@@ -1044,8 +1058,10 @@ textarea:focus-visible {
 }
 
 .matrix-toolbar h2 {
-  font-size: 18px;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .matrix-toolbar p {
@@ -1076,8 +1092,9 @@ textarea:focus-visible {
   background: var(--bg);
 }
 .sheet-like-header .slh-title {
-  font-size: 18px;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 600;
   letter-spacing: 0.5px;
 }
 .sheet-like-header .slh-month {
@@ -1259,8 +1276,10 @@ td.day-col.past-month {
 }
 
 .card-title {
+  font-family: var(--font-serif);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   margin-bottom: 14px;
   display: flex;
   align-items: center;
@@ -1328,7 +1347,7 @@ td.day-col.past-month {
 
 .rank-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary) 0%, #0284c7 100%);
+  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
   border-radius: var(--radius-full);
 }
 
@@ -1377,9 +1396,9 @@ td.day-col.past-month {
 }
 
 .icon-sheet { background: var(--sheet); }
-.icon-csv { background: #0284c7; }
-.icon-backup { background: #7c3aed; }
-.icon-gas { background: linear-gradient(135deg, var(--sheet) 0%, #0d9488 100%); }
+.icon-csv { background: var(--accent); }
+.icon-backup { background: #8B5E83; }
+.icon-gas { background: linear-gradient(135deg, var(--sheet) 0%, #357A59 100%); }
 
 .gas-status-ok { color: var(--sheet); font-weight: 600; }
 .gas-status-err { color: var(--danger); font-weight: 600; }
@@ -1534,8 +1553,10 @@ details.sync-instructions[open] summary {
 }
 
 .modal-header h3 {
-  font-size: 18px;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .form-group {
@@ -3251,7 +3272,7 @@ function updateDateStatusIndicators() {
   if (pill && pillText && pillBtn) {
     pill.setAttribute("data-mode", mode);
     if (isOnToday) {
-      pillText.textContent = "🟢 บันทึกของวันนี้ (" + todayShort + ")";
+      pillText.textContent = "บันทึกของวันนี้ (" + todayShort + ")";
       pill.title = "กำลังบันทึกข้อมูลของวันนี้";
       pillBtn.hidden = true;
     } else if (mode === "past") {
@@ -3285,8 +3306,8 @@ function updateDateStatusIndicators() {
   var badge = document.getElementById("dayContextBadge");
   if (badge) {
     badge.setAttribute("data-mode", mode);
-    badge.textContent = isOnToday ? "🟢 วันนี้"
-      : (mode === "past" ? "⏳ กำลังบันทึกย้อนหลัง" : "🔮 บันทึกล่วงหน้า");
+    badge.textContent = isOnToday ? "วันนี้"
+      : (mode === "past" ? "⏳ บันทึกย้อนหลัง" : "🔮 บันทึกล่วงหน้า");
   }
 }
 
