@@ -49,6 +49,9 @@
   --holiday-border: #fca5a5;
   --holiday-pill: #991b1b;
   --holiday-dot: #dc2626;
+  --warn-bg: #fef3c7;
+  --warn-fg: #92400e;
+  --warn-border: #d97706;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --radius-sm: 6px;
@@ -92,6 +95,9 @@
     --holiday-border: #7f1d1d;
     --holiday-pill: #f87171;
     --holiday-dot: #ef4444;
+    --warn-bg: #451a03;
+    --warn-fg: #fcd34d;
+    --warn-border: #b45309;
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
     color-scheme: dark;
@@ -130,6 +136,9 @@
   --holiday-border: #7f1d1d;
   --holiday-pill: #f87171;
   --holiday-dot: #ef4444;
+  --warn-bg: #451a03;
+  --warn-fg: #fcd34d;
+  --warn-border: #b45309;
   color-scheme: dark;
 }
 
@@ -551,6 +560,150 @@ textarea:focus-visible {
 
 .day-cell.selected.has-data::after {
   background: #ffffff;
+}
+
+/* ------ วันนี้ (today): วงแหวนน้ำเงิน + พื้นสี accent ให้ต่างจากวันอื่นชัดเจน ------ */
+.day-cell.is-today {
+  background: var(--accent-light);
+  color: var(--accent-text);
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  font-weight: 700;
+}
+
+.day-cell.is-today .day-num { color: var(--accent-text); }
+.day-cell.is-today .day-score-pill { color: var(--accent-text); font-weight: 700; }
+
+/* วันนี้ + กำลังเลือก: คงพื้นสีที่เลือกไว้ แต่คงวงแหวนสีน้ำเงินไว้เพื่อบอกว่า "คือวันนี้" */
+.day-cell.is-today.selected {
+  outline-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg-card);
+}
+
+.day-cell.is-today.selected .day-num,
+.day-cell.is-today.selected .day-score-pill {
+  color: #ffffff !important;
+}
+
+/* ------ แถบปุ่ม "กลับมาวันนี้" ในปฏิทิน ------ */
+.cal-today-bar {
+  margin: 0 0 10px;
+}
+
+.btn-cal-today {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+  transition: filter 0.15s, background 0.15s;
+}
+
+.btn-cal-today:hover { filter: brightness(1.08); }
+
+.btn-cal-today.is-on-today {
+  background: var(--bg-subtle);
+  border-color: var(--border-strong);
+  color: var(--fg-muted);
+  cursor: default;
+  font-weight: 600;
+}
+
+/* ------ ป้ายสถานะ "วันนี้ / ย้อนหลัง / ล่วงหน้า" บนหัวเว็บ ------ */
+.date-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--fg-muted);
+}
+
+.date-status .ds-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.date-status[data-mode="today"] {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+
+.date-status[data-mode="past"] {
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+  color: var(--warn-fg);
+}
+
+.date-status[data-mode="future"] {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.ds-jump {
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-main);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.ds-jump:hover { background: rgba(255, 255, 255, 0.55); }
+
+/* ------ ป้ายกำกับในหัวข้อ "บันทึกผลงาน วันที่ …" ------ */
+.day-context-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--fg-muted);
+}
+
+.day-context-badge[data-mode="today"] {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+
+.day-context-badge[data-mode="past"] {
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+  color: var(--warn-fg);
+}
+
+.day-context-badge[data-mode="future"] {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent-text);
 }
 
 .day-num {
@@ -1594,6 +1747,12 @@ details.sync-instructions[open] summary {
         <select id="yearSelect" aria-label="ปี พ.ศ."></select>
       </div>
 
+      <div class="date-status" id="dateStatusPill" data-mode="today" title="สถานะวันที่ที่กำลังบันทึก เทียบกับวันนี้">
+        <span class="ds-dot" aria-hidden="true"></span>
+        <span id="dateStatusText">วันนี้</span>
+        <button type="button" class="ds-jump" id="headerJumpTodayBtn" hidden title="กลับมาเดือนปัจจุบันและเลือกวันนี้">กลับมาวันนี้</button>
+      </div>
+
       <button class="doctor-chip" id="doctorChip" title="คลิกเพื่อแก้ไขข้อมูลผู้บันทึก">
         <span id="docNameDisplay">นพ.ฮัมดี หะยีอาลี</span>
         <small id="docChipHint">(แก้ไข)</small>
@@ -1653,6 +1812,13 @@ details.sync-instructions[open] summary {
           <button class="date-nav-btn" id="nextDayBtn" title="วันถัดไป" aria-label="วันถัดไป">›</button>
         </div>
 
+        <div class="cal-today-bar">
+          <button type="button" class="btn-cal-today" id="calTodayBtn" title="กลับมาเดือนปัจจุบันและเลือกวันนี้">
+            <span aria-hidden="true">📅</span>
+            <span id="calTodayBtnText">กลับมาวันนี้</span>
+          </button>
+        </div>
+
         <div class="dow-header" id="dowHeader" aria-hidden="true">
           <span class="dow-cell dow-sun">อา.</span>
           <span class="dow-cell">จ.</span>
@@ -1700,6 +1866,7 @@ details.sync-instructions[open] summary {
           <div class="selected-day-heading">
             <h2 id="dailyTitleText">บันทึกผลงาน วันที่ 1</h2>
             <span id="dailyDateSub">—</span>
+            <span class="day-context-badge" id="dayContextBadge" data-mode="today" title="สถานะของวันที่กำลังบันทึก เทียบกับวันนี้">วันนี้</span>
             <span class="holiday-badge" id="dayHolidayBadge" hidden></span>
           </div>
 
@@ -2606,6 +2773,95 @@ function daysInCurrentMonth() {
   return new Date(state.currentYear - 543, state.currentMonth, 0).getDate();
 }
 
+/* ---------- สถานะ "วันนี้ vs ย้อนหลัง/ล่วงหน้า" ---------- */
+
+function getTodayInfo() {
+  var now = new Date();
+  return { yearBE: now.getFullYear() + 543, month: now.getMonth() + 1, day: now.getDate() };
+}
+
+/* เทียบวันที่/เดือนที่กำลังดูกับวันนี้ → "today" | "past" | "future" */
+function viewDateMode() {
+  var t = getTodayInfo();
+  if (state.currentYear !== t.yearBE) return (state.currentYear < t.yearBE) ? "past" : "future";
+  if (state.currentMonth !== t.month) return (state.currentMonth < t.month) ? "past" : "future";
+  if (state.selectedDay !== t.day) return (state.selectedDay < t.day) ? "past" : "future";
+  return "today";
+}
+
+/* วันที่กำลังดู (short) เช่น "5 พ.ย. 2569" */
+function viewDateShort() {
+  return state.selectedDay + " " + THAI_MONTHS_SHORT[state.currentMonth] + " " + state.currentYear;
+}
+
+function jumpToToday() {
+  flushPendingAutoSync(); // ถ้ามีข้อมูลเดือนเดิมค้างส่ง ให้ส่งก่อนกระโดดกลับ
+  var t = getTodayInfo();
+  state.currentYear = t.yearBE;
+  state.currentMonth = t.month;
+  state.selectedDay = t.day;
+  document.getElementById("monthSelect").value = String(t.month);
+  document.getElementById("yearSelect").value = String(t.yearBE);
+  saveStorage();
+  renderAll();
+  syncMonthOnSwitch();
+  showToast("กลับมาที่วันนี้ (" + t.day + " " + THAI_MONTHS_SHORT[t.month] + " " + t.yearBE + ") แล้ว");
+}
+
+/* อัปเดตป้ายสถานะทุกจุด: หัวเว็บ + ปุ่มปฏิทิน + หัวข้อบันทึกรายวัน */
+function updateDateStatusIndicators() {
+  var mode = viewDateMode();
+  var t = getTodayInfo();
+  var todayShort = t.day + " " + THAI_MONTHS_SHORT[t.month] + " " + t.yearBE;
+  var isOnToday = (mode === "today");
+
+  /* 1) ป้ายบนหัวเว็บ (มองเห็นทุกแท็บ) */
+  var pill = document.getElementById("dateStatusPill");
+  var pillText = document.getElementById("dateStatusText");
+  var pillBtn = document.getElementById("headerJumpTodayBtn");
+  if (pill && pillText && pillBtn) {
+    pill.setAttribute("data-mode", mode);
+    if (isOnToday) {
+      pillText.textContent = "🟢 บันทึกของวันนี้ (" + todayShort + ")";
+      pill.title = "กำลังบันทึกข้อมูลของวันนี้";
+      pillBtn.hidden = true;
+    } else if (mode === "past") {
+      pillText.textContent = "⏳ กำลังบันทึกย้อนหลัง: " + viewDateShort();
+      pill.title = "กำลังดู/บันทึกวันที่ผ่านมาแล้ว (วันนี้คือ " + todayShort + ")";
+      pillBtn.hidden = false;
+      pillBtn.textContent = "📅 กลับมาวันนี้";
+    } else {
+      pillText.textContent = "🔮 บันทึกล่วงหน้า: " + viewDateShort();
+      pill.title = "กำลังดู/บันทึกวันที่ยังไม่ถึง (วันนี้คือ " + todayShort + ")";
+      pillBtn.hidden = false;
+      pillBtn.textContent = "📅 กลับมาวันนี้";
+    }
+  }
+
+  /* 2) ปุ่ม "กลับมาวันนี้" ในปฏิทิน */
+  var calBtn = document.getElementById("calTodayBtn");
+  var calBtnText = document.getElementById("calTodayBtnText");
+  if (calBtn && calBtnText) {
+    calBtn.classList.toggle("is-on-today", isOnToday);
+    calBtn.disabled = isOnToday;
+    calBtnText.textContent = isOnToday
+      ? "✓ กำลังบันทึกของวันนี้ (" + todayShort + ")"
+      : "📅 กลับมาวันนี้ (" + todayShort + ")";
+    calBtn.title = isOnToday
+      ? "อยู่ที่วันนี้แล้ว"
+      : "กระโดดกลับมาเดือนปัจจุบันและเลือกวันนี้ (" + todayShort + ")";
+  }
+
+  /* 3) ป้ายเล็กในหัวข้อ "บันทึกผลงาน วันที่ …" */
+  var badge = document.getElementById("dayContextBadge");
+  if (badge) {
+    badge.setAttribute("data-mode", mode);
+    badge.textContent = isOnToday ? "🟢 วันนี้"
+      : (mode === "past" ? "⏳ กำลังบันทึกย้อนหลัง" : "🔮 บันทึกล่วงหน้า");
+  }
+}
+
+
 /* ---------- helpers ---------- */
 
 function fmtNum(n, decimals) {
@@ -2722,6 +2978,10 @@ function init() {
   document.getElementById("nextDayBtn").addEventListener("click", function () {
     if (state.selectedDay < daysInCurrentMonth()) selectDay(state.selectedDay + 1);
   });
+
+  /* ปุ่ม "กลับมาวันนี้" — บนปฏิทินและบนหัวเว็บ */
+  document.getElementById("calTodayBtn").addEventListener("click", jumpToToday);
+  document.getElementById("headerJumpTodayBtn").addEventListener("click", jumpToToday);
 
   // Two-step inline confirm (no confirm() dialog — it never shows in this viewer)
   var clearBtn = document.getElementById("clearDayBtn");
@@ -2920,15 +3180,20 @@ function renderDaysGrid() {
         monthHolidays.push({ day: day, name: hol, dow: dow });
       }
 
+      /* วันนี้จริง ๆ ของเครื่องนี้ (ถ้าดูเดือนอื่นก็ไม่มีช่องวันนี้ในกริด) */
+      var t = getTodayInfo();
+      var isTodayCell = (state.currentYear === t.yearBE && state.currentMonth === t.month && day === t.day);
+
       var cell = document.createElement("button");
       cell.type = "button";
       cell.className = "day-cell" +
         (day === state.selectedDay ? " selected" : "") +
+        (isTodayCell ? " is-today" : "") +
         (totals.dayPts[day] > 0 ? " has-data" : "") +
         (hol ? " is-holiday" : (isSun ? " is-sun" : (isSat ? " is-sat" : "")));
 
       var tip = day + " " + THAI_MONTHS_SHORT[state.currentMonth] + " " + state.currentYear +
-        " (" + THAI_DOW_FULL[dow] + ")";
+        " (" + THAI_DOW_FULL[dow] + ")" + (isTodayCell ? " — วันนี้" : "");
       if (hol) tip += " — วันหยุดราชการ: " + hol;
       cell.title = tip;
 
@@ -2985,6 +3250,9 @@ function renderDaysGrid() {
       holBox.hidden = false;
     }
   }
+
+  /* ป้ายสถานะ วันนี้ / ย้อนหลัง / ล่วงหน้า — หัวเว็บ + ปุ่มปฏิทิน + หัวข้อรายวัน */
+  updateDateStatusIndicators();
 }
 
 function itemTotalHtml(pts) {
