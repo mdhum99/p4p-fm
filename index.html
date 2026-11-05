@@ -314,7 +314,8 @@ textarea:focus-visible {
 /* KPI Cards */
 .kpi-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  /* min() กันจอกว้างต่ำกว่า 230px (เช่น 320px) ไม่ให้คอลัมน์ดันหน้าล้น */
+  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
   gap: 12px;
 }
 
@@ -409,7 +410,8 @@ textarea:focus-visible {
 }
 
 @media (max-width: 900px) {
-  .daily-container { grid-template-columns: 1fr; }
+  .daily-container { grid-template-columns: minmax(0, 1fr); }
+  .daily-container > * { min-width: 0; }
 }
 
 .calendar-sidebar {
@@ -875,7 +877,9 @@ textarea:focus-visible {
 
 .activity-card {
   display: flex;
+  flex-wrap: wrap;       /* จอแคบ: ปุ่ม stepper + แต้มรวม ลงบรรทัดใหม่ ไม่ดันการ์ดกว้างล้นจอ */
   align-items: center;
+  row-gap: 10px;
   padding: 10px 14px;
   border-radius: var(--radius-md);
   background: var(--bg-subtle);
@@ -890,7 +894,7 @@ textarea:focus-visible {
 }
 
 .activity-info {
-  flex: 1;
+  flex: 1 1 200px;
   min-width: 0;
 }
 
@@ -899,6 +903,7 @@ textarea:focus-visible {
   font-weight: 600;
   color: var(--fg);
   display: flex;
+  flex-wrap: wrap;       /* ชื่อยาว + ป้ายหมวดย่อย A1–E1 ตกบรรทัดใหม่ได้ */
   align-items: center;
   gap: 8px;
 }
@@ -938,7 +943,8 @@ textarea:focus-visible {
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   padding: 1px 8px;
-  white-space: nowrap;
+  max-width: 100%;
+  overflow-wrap: anywhere;   /* ป้ายยาว เช่น "C1/C3 Referral/Consult + ดูแลต่อเนื่อง" ตัดบรรทัดได้ */
 }
 
 .activity-stepper {
@@ -999,6 +1005,22 @@ textarea:focus-visible {
   font-size: 10px;
   color: var(--fg-subtle);
   font-weight: 400;
+}
+
+@media (max-width: 600px) {
+  .activity-card {
+    justify-content: space-between;
+  }
+  .activity-info {
+    flex: 1 1 100%;
+  }
+  .activity-stepper {
+    flex: 0 0 auto;
+  }
+  .item-day-total {
+    flex: 0 0 auto;
+    text-align: right;
+  }
 }
 
 /* ============ VIEW 2: 31-DAY MATRIX ============ */
@@ -1267,11 +1289,25 @@ td.day-col.past-month {
   font-size: 13px;
 }
 
-/* ป้ายชื่อหมวด A–F ในกราฟสรุป: กว้างขึ้นจาก 170 → 200px ให้ชื่อยาว (เช่น E) ตัดบรรทัดน้อยลง */
+/* ป้ายชื่อหมวด A–F ในกราฟสรุป: กว้างขึ้นจาก 170 → 200px ให้ชื่อยาว (เช่น E) ตัดบรรทัดน้อยลง
+   บนจอแคบย่อเป็น 120px เพื่อไม่ให้แถวล้นการ์ด (เดิม fixed 200px ทำ stats เกินจอ 8px ที่ 390px) */
 .cat-breakdown-label {
   flex: 0 0 200px;
   min-width: 0;
   line-height: 1.3;
+}
+
+@media (max-width: 600px) {
+  .cat-breakdown-label {
+    flex: 0 0 120px;
+    font-size: 11px;
+  }
+  /* แถว "จำนวน + แต้ม" ใต้แถบ: จอแคบให้ปัดได้ ไม่ดันข้อความล้นการ์ด */
+  .rank-bar-wrap > div:first-child {
+    flex-wrap: wrap;
+    row-gap: 0;
+    column-gap: 6px;
+  }
 }
 
 .rank-bar-wrap {
@@ -1305,7 +1341,8 @@ td.day-col.past-month {
 /* ============ VIEW 4: SYNC ============ */
 .sync-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  /* min() กันจอแคบต่ำกว่า 340px (เช่น 320/360px) ไม่ให้การ์ดล้นออกนอกจอ */
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -1471,6 +1508,22 @@ details.sync-instructions[open] summary {
   max-width: 500px;
   width: 100%;
   box-shadow: var(--shadow-md);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;          /* จอม้วน: modal ยาวกว่าจอเลื่อนอ่านได้ทั้งก้อน */
+}
+
+/* ปุ่มท้าย modal — เดิม inline ทำให้ปุ่ม "เข้าใช้งาน / บันทึก" หลุดขอบจอบนมือถือ */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+@media (max-width: 480px) {
+  .modal-content { padding: 18px 16px; }
+  .modal-actions { flex-direction: column-reverse; }
+  .modal-actions .btn { width: 100%; }   /* ปุ่มหลักอยู่บน เต็มความกว้าง แตะง่าย */
 }
 
 .modal-header {
@@ -1995,7 +2048,7 @@ details.sync-instructions[open] summary {
             </div>
           </div>
 
-          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin-top:16px;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr)); gap:12px; margin-top:16px;">
             <div class="form-group" style="margin:0;">
               <label for="inputGasUrl">URL เว็บแอป Google Apps Script</label>
               <input type="url" class="form-input" id="inputGasUrl"
@@ -2204,7 +2257,7 @@ details.sync-instructions[open] summary {
       <input type="text" class="form-input" id="inputDocHosp">
     </div>
 
-    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px;">
+    <div class="modal-actions">
       <button class="btn btn-subtle" id="cancelModalBtn">ยกเลิก</button>
       <button class="btn btn-primary" id="saveProfileBtn">เข้าใช้งาน / บันทึก</button>
     </div>
@@ -4334,8 +4387,9 @@ function renderTopActivities() {
     var el = document.createElement("div");
     el.className = "ranking-item";
     el.innerHTML =
-      '<div style="width:28px; font-weight:700; color:var(--fg-muted);" class="num">#' + (shown) + "</div>" +
-      '<div style="width:250px; font-weight:600; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + a.name.replace(/"/g, "&quot;") + '">' +
+      '<div style="width:28px; flex:0 0 auto; font-weight:700; color:var(--fg-muted);" class="num">#' + (shown) + "</div>" +
+      /* ชื่อกิจกรรม: ยืดหยุ่น (แคบสุด 0 ล้มตัวไม่ได้, กว้างสุด 250px) — เดิม fixed 250px ทำให้หน้ามือถือล้น */
+      '<div style="flex:0 1 250px; min-width:0; font-weight:600; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + a.name.replace(/"/g, "&quot;") + '">' +
         a.name + "</div>" +
       '<div class="rank-bar-wrap">' +
         '<div style="display:flex; justify-content:space-between; font-size:11px; color:var(--fg-muted);">' +
