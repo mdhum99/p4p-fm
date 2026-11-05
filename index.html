@@ -3626,7 +3626,11 @@ function setupDoctorModal() {
       state.doctor.position = document.getElementById("inputDocPosition").value.trim();
       state.doctor.dept = document.getElementById("inputDocDept").value.trim();
       state.doctor.hosp = document.getElementById("inputDocHosp").value.trim();
-      if (!state.gas.tabName) {
+      /* ชื่อแท็บต้องตามชื่อที่ล็อกอินเสมอ — ค่าเก่าในเครื่อง (เช่น "นพ.ฮัมดี" สั้น ๆ จากยุคก่อน)
+         ไม่ขึ้นต้นด้วยชื่อเต็ม = เซิร์ฟเวอร์จะปฏิเสธ NOT_YOUR_TAB ทั้ง save และดึงข้อมูล */
+      var baseOld = cleanTabBaseName(state.gas.tabName || "");
+      if (!baseOld || baseOld.indexOf(chosen) !== 0) {
+        state.gas.tabName = chosen;
         var tabInp = document.getElementById("inputSheetTabName");
         if (tabInp) tabInp.value = chosen;
       }
@@ -4449,9 +4453,16 @@ function cleanTabBaseName(raw) {
   return stripped || name; // ถ้าตัดแล้วว่าง ให้ใช้ชื่อเดิมไว้ก่อน
 }
 
-/* ชื่อแท็บจริงที่ใช้ส่งขึ้นชีต = ชื่อคน + เดือน/ปีที่กำลังดูอยู่ */
+/* ชื่อแท็บจริงที่ใช้ส่งขึ้นชีต = ชื่อคน + เดือน/ปีที่กำลังดูอยู่
+   เซิร์ฟเวอร์บังคับว่าชื่อแท็บต้องขึ้นต้นด้วยชื่อที่ล็อกอิน (NOT_YOUR_TAB) —
+   ถ้าช่อง "ชื่อแท็บ" ค้างค่าเก่าที่ไม่ขึ้นต้นด้วยชื่อที่ล็อกอิน (เช่น "นพ.ฮัมดี" สั้น ๆ
+   จากยุคก่อน ส่วนชื่อล็อกอินคือ "นพ.ฮัมดี หะยีอาลี") ให้ใช้ชื่อที่ล็อกอินแทน
+   ยังเคารพชื่อที่ตั้งเองถ้าขึ้นต้นด้วยชื่อที่ล็อกอิน (เช่น "ชื่อ-2") */
 function effectiveTabName() {
-  return effectiveTabNameFor(state.gas.tabName || state.doctor.name || "");
+  var base = cleanTabBaseName(state.gas.tabName || "");
+  var owner = cleanTabBaseName(state.doctor.name || "");
+  if (owner && base && base.indexOf(owner) !== 0) base = "";
+  return effectiveTabNameFor(base || owner);
 }
 
 /* ชื่อแท็บของ "ชื่อที่ระบุ" (ใช้ตอนล็อกอินตรวจ PIN ก่อนที่ state.doctor.name จะเปลี่ยน) */
@@ -4813,6 +4824,22 @@ function pushToSheet(opts) {
         setGasStatus('<span class="gas-status-err">หยุดส่งเพื่อกันข้อมูลสูญ</span> — ' + escapeHtml(err.message), "");
         return;
       }
+      /* ชื่อแท็บค้างค่าเก่าไม่ตรงชื่อที่ล็อกอิน — ซ่อมให้เอง (ตั้งตามชื่อล็อกอิน) แล้วส่งซ้ำรอบเดียว */
+      if (err.code === "NOT_YOUR_TAB" && !o.tabNameHealed) {
+        autoSyncRetries = 0;
+        clearTimeout(autoSyncRetryTimer);
+        autoSyncRetryTimer = null;
+        var fixedBase = cleanTabBaseName(state.doctor.name);
+        if (fixedBase) {
+          state.gas.tabName = fixedBase;
+          var tabInp2 = document.getElementById("inputSheetTabName");
+          if (tabInp2) tabInp2.value = fixedBase;
+          saveStorage();
+          showToast("ชื่อแท็บในเครื่องนี้เก่าไม่ตรงชื่อที่ล็อกอิน — ระบบแก้เป็น \"" + fixedBase + "\" แล้วส่งใหม่");
+          pushToSheet({ auto: o.auto, force: !!o.force, keepalive: o.keepalive, triggerBtn: o.triggerBtn, tabNameHealed: true });
+          return;
+        }
+      }
       /* PIN ผิด / ไม่มี PIN / ถูกล็อก — ปลด session ให้กรอกใหม่ (หยุด retry วนลูปด้วย) */
       if (err.code === "AUTH_FAIL" || err.code === "NO_PIN" || err.code === "NO_USER" || err.code === "TOO_MANY_TRIES") {
         autoSyncRetries = 0;
@@ -4963,6 +4990,19 @@ function pullFromSheet(opts) {
       }
     })
     .catch(function (err) {
+      /* ชื่อแท็บค้างค่าเก่าไม่ตรงชื่อที่ล็อกอิน — ซ่อมแล้วดึงซ้ำรอบเดียว */
+      if (err.code === "NOT_YOUR_TAB" && !o.tabNameHealed) {
+        var fixedBase = cleanTabBaseName(state.doctor.name);
+        if (fixedBase) {
+          state.gas.tabName = fixedBase;
+          var tabInp = document.getElementById("inputSheetTabName");
+          if (tabInp) tabInp.value = fixedBase;
+          saveStorage();
+          showToast("ชื่อแท็บในเครื่องนี้เก่าไม่ตรงชื่อที่ล็อกอิน — ระบบแก้เป็น \"" + fixedBase + "\" แล้วดึงใหม่");
+          pullFromSheet({ silent: o.silent, tabNameHealed: true });
+          return;
+        }
+      }
       if (err.code === "AUTH_FAIL" || err.code === "NO_PIN" || err.code === "NO_USER" || err.code === "TOO_MANY_TRIES") {
         clearSessionPin();
         openDoctorModal("edit");
