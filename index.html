@@ -1507,6 +1507,31 @@ details.sync-instructions[open] summary {
   border-radius: var(--radius-sm);
 }
 
+/* ---------- ไอคอน SVG ชุดเส้นบาง (Lucide-style) — สีตาม currentColor ทั้งโหมดสว่าง/มืด ---------- */
+.ic {
+  width: 1.1em;
+  height: 1.1em;
+  display: inline-block;
+  vertical-align: -0.18em;
+  flex: 0 0 auto;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ic-lg { width: 1.3em; height: 1.3em; }
+
+.ic-spin {
+  animation: ic-spin 1s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+@keyframes ic-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) { .ic-spin { animation: none; } }
+
 /* Modal */
 .modal-backdrop {
   position: fixed;
@@ -1791,6 +1816,127 @@ details.sync-instructions[open] summary {
 </style>
 </head>
 <body>
+
+<!-- ============ ชุดไอคอน SVG เส้นบาง (Lucide-style) — ใช้ผ่าน <use href="#i-..."> สีตาม currentColor ============ -->
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-cloud-up" viewBox="0 0 24 24">
+      <path d="M16 16 12 12l-4 4"/>
+      <path d="M12 12v9"/>
+      <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+    </symbol>
+    <symbol id="i-cloud-down" viewBox="0 0 24 24">
+      <path d="M16 16 12 20l-4-4"/>
+      <path d="M12 12v9"/>
+      <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+    </symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="18" rx="2"/>
+      <path d="M16 2v4M8 2v4M3 10h18"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="M20 6 9 17l-5-5"/>
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24">
+      <path d="M18 6 6 18M6 6l12 12"/>
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24">
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+      <path d="M12 9v4M12 17h.01"/>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24">
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+      <path d="M21 3v5h-5"/>
+      <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+      <path d="M3 21v-5h5"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 6v6l4 2"/>
+    </symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24">
+      <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24">
+      <rect x="3" y="11" width="18" height="11" rx="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </symbol>
+    <symbol id="i-printer" viewBox="0 0 24 24">
+      <path d="M6 9V2h12v7"/>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+      <rect x="6" y="14" width="12" height="8"/>
+    </symbol>
+    <symbol id="i-file-sheet" viewBox="0 0 24 24">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/>
+      <path d="M14 2v6h6"/>
+      <path d="M8 13h2M8 17h2M14 13h2M14 17h2"/>
+    </symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24">
+      <rect x="9" y="9" width="13" height="13" rx="2"/>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    </symbol>
+    <symbol id="i-user" viewBox="0 0 24 24">
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </symbol>
+    <symbol id="i-user-plus" viewBox="0 0 24 24">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M19 8v6M22 11h-6"/>
+    </symbol>
+    <symbol id="i-user-check" viewBox="0 0 24 24">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="m16 11 2 2 4-4"/>
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24">
+      <path d="M3 6h18"/>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+    </symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24">
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+      <path d="M4 22v-7"/>
+    </symbol>
+    <symbol id="i-chev-l" viewBox="0 0 24 24">
+      <path d="m15 18-6-6 6-6"/>
+    </symbol>
+    <symbol id="i-chev-r" viewBox="0 0 24 24">
+      <path d="m9 18 6-6-6-6"/>
+    </symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24">
+      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
+    </symbol>
+    <symbol id="i-archive" viewBox="0 0 24 24">
+      <rect x="2" y="3" width="20" height="5" rx="1"/>
+      <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/>
+      <path d="M10 12h4"/>
+    </symbol>
+    <symbol id="i-table" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="16" rx="2"/>
+      <path d="M3 10h18M9 4v16M15 4v16"/>
+    </symbol>
+    <symbol id="i-file-text" viewBox="0 0 24 24">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/>
+      <path d="M14 2v6h6"/>
+      <path d="M8 13h8M8 17h8"/>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <path d="m7 10 5 5 5-5"/>
+      <path d="M12 15V3"/>
+    </symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <path d="m7 8 5-5 5 5"/>
+      <path d="M12 3v12"/>
+    </symbol>
+  </defs>
+</svg>
+
 <div class="app-container"><!-- Header -->
   <header class="app-header">
     <div class="brand-section">
@@ -1828,18 +1974,21 @@ details.sync-instructions[open] summary {
       </div>
 
       <button class="doctor-chip" id="doctorChip" title="คลิกเพื่อแก้ไขข้อมูลผู้บันทึก">
+        <svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>
         <span id="docNameDisplay">นพ.ฮัมดี หะยีอาลี</span>
         <small id="docChipHint">(แก้ไข)</small>
       </button>
 
-      <span class="sync-badge" id="autoSyncBadge" hidden title="ซิงก์อัตโนมัติเปิดอยู่ — ข้อมูลจะถูกส่งเข้าชีตให้เอง">⟳ ออโต้</span>
+      <span class="sync-badge" id="autoSyncBadge" hidden title="ซิงก์อัตโนมัติเปิดอยู่ — ข้อมูลจะถูกส่งเข้าชีตให้เอง"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg><span id="autoSyncBadgeText">ออโต้</span></span>
 
       <button class="btn btn-sheet btn-sm" id="headerSaveSheetBtn" title="ส่งข้อมูลเดือนนี้เข้า Google Sheet ทันที">
-        <span id="headerSaveBtnText">☁️ บันทึกเข้าชีต</span>
+        <svg class="ic" aria-hidden="true"><use href="#i-cloud-up"/></svg>
+        <span id="headerSaveBtnText">บันทึกเข้าชีต</span>
       </button>
 
       <button class="btn btn-subtle btn-sm" id="headerPullBtn" title="ดึงข้อมูลเดือนนี้จากแท็บของคุณในชีต กลับเข้าเครื่องนี้ (ใช้ตอนเปิดเว็บบนเครื่องใหม่)">
-        <span id="headerPullBtnText">⬇️ ดึงจากชีต</span>
+        <svg class="ic" aria-hidden="true"><use href="#i-cloud-down"/></svg>
+        <span id="headerPullBtnText">ดึงจากชีต</span>
       </button>
     </div>
   </header>
@@ -1873,10 +2022,10 @@ details.sync-instructions[open] summary {
 
   <!-- Navigation Tabs -->
   <nav class="tabs-nav" aria-label="มุมมองการบันทึก">
-    <button class="tab-btn active" data-tab="daily">บันทึกรายวัน</button>
-    <button class="tab-btn" data-tab="matrix">ตาราง 31 วัน</button>
-    <button class="tab-btn" data-tab="stats">สรุป &amp; สถิติ</button>
-    <button class="tab-btn" data-tab="sync">ส่งออกข้อมูล</button>
+    <button class="tab-btn active" data-tab="daily"><svg class="ic" aria-hidden="true"><use href="#i-calendar"/></svg>บันทึกรายวัน</button>
+    <button class="tab-btn" data-tab="matrix"><svg class="ic" aria-hidden="true"><use href="#i-table"/></svg>ตาราง 31 วัน</button>
+    <button class="tab-btn" data-tab="stats"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg>สรุป &amp; สถิติ</button>
+    <button class="tab-btn" data-tab="sync"><svg class="ic" aria-hidden="true"><use href="#i-cloud-up"/></svg>ส่งออกข้อมูล</button>
   </nav>
 
   <!-- ============ VIEW 1: DAILY ENTRY ============ -->
@@ -1885,14 +2034,14 @@ details.sync-instructions[open] summary {
 
       <aside class="calendar-sidebar">
         <div class="date-header">
-          <button class="date-nav-btn" id="prevDayBtn" title="วันก่อนหน้า" aria-label="วันก่อนหน้า">‹</button>
+          <button class="date-nav-btn" id="prevDayBtn" title="วันก่อนหน้า" aria-label="วันก่อนหน้า"><svg class="ic" aria-hidden="true"><use href="#i-chev-l"/></svg></button>
           <strong id="calendarMonthTitle">—</strong>
-          <button class="date-nav-btn" id="nextDayBtn" title="วันถัดไป" aria-label="วันถัดไป">›</button>
+          <button class="date-nav-btn" id="nextDayBtn" title="วันถัดไป" aria-label="วันถัดไป"><svg class="ic" aria-hidden="true"><use href="#i-chev-r"/></svg></button>
         </div>
 
         <div class="cal-today-bar">
           <button type="button" class="btn-cal-today" id="calTodayBtn" title="กลับมาเดือนปัจจุบันและเลือกวันนี้">
-            <span aria-hidden="true">📅</span>
+            <span class="cal-ico" id="calTodayBtnIcon" aria-hidden="true"><svg class="ic"><use href="#i-calendar"/></svg></span>
             <span id="calTodayBtnText">กลับมาวันนี้</span>
           </button>
         </div>
@@ -1923,16 +2072,16 @@ details.sync-instructions[open] summary {
             <strong class="num" id="sidebarDayItems">0</strong>
           </div>
           <div class="day-summary-actions">
-            <button class="btn btn-subtle btn-sm" style="flex:1;" id="copyPrevDayBtn">คัดลอกจากเมื่อวาน</button>
+            <button class="btn btn-subtle btn-sm" style="flex:1;" id="copyPrevDayBtn"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg>คัดลอกจากเมื่อวาน</button>
           </div>
           <div class="day-summary-actions">
-            <button class="btn btn-danger btn-sm" style="flex:1;" id="clearDayBtn">ล้างข้อมูลวันนี้</button>
+            <button class="btn btn-danger btn-sm" style="flex:1;" id="clearDayBtn"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span id="clearDayBtnText">ล้างข้อมูลวันนี้</span></button>
           </div>
         </div>
 
         <div class="month-holidays-box" id="monthHolidaysBox" hidden>
           <div class="month-holidays-title">
-            <span aria-hidden="true">🎏</span>
+            <svg class="ic" style="color:var(--holiday-pill);" aria-hidden="true"><use href="#i-flag"/></svg>
             <span>วันหยุดราชการเดือนนี้</span>
           </div>
           <ul class="month-holidays-list" id="monthHolidaysList"></ul>
@@ -1974,9 +2123,9 @@ details.sync-instructions[open] summary {
           <p>พิมพ์ตัวเลขลงช่องได้เลย ใช้ปุ่มลูกศรเลื่อนได้ทั้งแนวตั้งและแนวนอน ผลรวมคำนวณอัตโนมัติ</p>
         </div>
         <div class="matrix-actions">
-          <button class="btn btn-sheet btn-sm" id="matrixPrintBtn" title="พิมพ์หรือบันทึกเป็น PDF (หน้ากระดาษแนวนอน รวมหัวเรื่องเหมือนในชีต)">🖨️ พิมพ์ / บันทึก PDF</button>
-          <button class="btn btn-sheet btn-sm" id="matrixXlsBtn" title="ดาวน์โหลดไฟล์ Excel (.xls) มีหัวเรื่อง 4 แถวแรกเหมือนในชีต">📊 ดาวน์โหลด Excel</button>
-          <button class="btn btn-sheet btn-sm" id="matrixQuickCopyBtn">คัดลอกไปวางในชีต (เริ่มที่ G6)</button>
+          <button class="btn btn-sheet btn-sm" id="matrixPrintBtn" title="พิมพ์หรือบันทึกเป็น PDF (หน้ากระดาษแนวนอน รวมหัวเรื่องเหมือนในชีต)"><svg class="ic" aria-hidden="true"><use href="#i-printer"/></svg>พิมพ์ / บันทึก PDF</button>
+          <button class="btn btn-sheet btn-sm" id="matrixXlsBtn" title="ดาวน์โหลดไฟล์ Excel (.xls) มีหัวเรื่อง 4 แถวแรกเหมือนในชีต"><svg class="ic" aria-hidden="true"><use href="#i-file-sheet"/></svg>ดาวน์โหลด Excel</button>
+          <button class="btn btn-sheet btn-sm" id="matrixQuickCopyBtn"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg>คัดลอกไปวางในชีต (เริ่มที่ G6)</button>
         </div>
       </div>
 
@@ -2102,8 +2251,8 @@ details.sync-instructions[open] summary {
         </div>
 
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-subtle" id="testGasBtn">ทดสอบการเชื่อมต่อ</button>
-          <button class="btn btn-sheet" id="saveGasBtn" style="flex:1; min-width:220px;">บันทึกข้อมูลเดือนนี้เข้าชีตทันที</button>
+          <button class="btn btn-subtle" id="testGasBtn"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg>ทดสอบการเชื่อมต่อ</button>
+          <button class="btn btn-sheet" id="saveGasBtn" style="flex:1; min-width:220px;"><svg class="ic" aria-hidden="true"><use href="#i-cloud-up"/></svg>บันทึกข้อมูลเดือนนี้เข้าชีตทันที</button>
         </div>
 
         <details class="sync-instructions">
@@ -2120,7 +2269,7 @@ details.sync-instructions[open] summary {
             รหัสไฟล์ชีต: <code>1GLvhWVQj174VaZXpHuOSZ3xH2N_efk69UKlrubg0WTk</code><br>
             เมื่อแก้ไข Code.gs ภายหลัง ต้องกด <strong>ทำให้ใช้งานได้ → จัดการการทำให้ใช้งานได้</strong> แล้วแก้ไขเวอร์ชัน เป็นเวอร์ชันใหม่
           </p>
-          <button class="btn btn-subtle btn-sm" id="copyGasCodeBtn" style="margin-top:8px;">คัดลอกโค้ด Google Apps Script</button>
+          <button class="btn btn-subtle btn-sm" id="copyGasCodeBtn" style="margin-top:8px;"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg>คัดลอกโค้ด Google Apps Script</button>
         </details>
       </div>
 
@@ -2170,7 +2319,7 @@ details.sync-instructions[open] summary {
           </div>
         </div>
 
-        <button class="btn btn-sheet" id="copyG6Btn">คัดลอกข้อมูลวันที่ 1–31 (G6:AK25)</button>
+        <button class="btn btn-sheet" id="copyG6Btn"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg>คัดลอกข้อมูลวันที่ 1–31 (G6:AK25)</button>
       </div>
 
       <div class="sync-card">
@@ -2189,8 +2338,8 @@ details.sync-instructions[open] summary {
         </div>
 
         <div style="display:flex; flex-direction:column; gap:8px;">
-          <button class="btn btn-primary" id="copyFullTableBtn">คัดลอกตารางทั้งหมด (A4:AK25)</button>
-          <button class="btn btn-subtle" id="copyCsvBtn">คัดลอกเป็นข้อความ CSV</button>
+          <button class="btn btn-primary" id="copyFullTableBtn"><svg class="ic" aria-hidden="true"><use href="#i-table"/></svg>คัดลอกตารางทั้งหมด (A4:AK25)</button>
+          <button class="btn btn-subtle" id="copyCsvBtn"><svg class="ic" aria-hidden="true"><use href="#i-file-text"/></svg>คัดลอกเป็นข้อความ CSV</button>
         </div>
       </div>
 
@@ -2208,8 +2357,8 @@ details.sync-instructions[open] summary {
         </div>
 
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-subtle" id="exportJsonBtn" style="flex:1;">สร้างข้อความสำรอง</button>
-          <button class="btn btn-primary" id="importJsonBtn" style="flex:1;">นำเข้าจากช่องข้างบน</button>
+          <button class="btn btn-subtle" id="exportJsonBtn" style="flex:1;"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg>สร้างข้อความสำรอง</button>
+          <button class="btn btn-primary" id="importJsonBtn" style="flex:1;"><svg class="ic" aria-hidden="true"><use href="#i-upload"/></svg>นำเข้าจากช่องข้างบน</button>
         </div>
       </div>
 
@@ -2228,11 +2377,11 @@ details.sync-instructions[open] summary {
   <div class="modal-content" role="dialog" aria-modal="true" aria-label="แก้ไขข้อมูลผู้บันทึก">
     <div class="modal-header">
       <h3 id="profileModalTitle">แก้ไขข้อมูลผู้บันทึก</h3>
-      <button class="date-nav-btn" id="closeModalBtn" aria-label="ปิด">✕</button>
+      <button class="date-nav-btn" id="closeModalBtn" aria-label="ปิด"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
 
     <p id="regWelcomeNote" hidden style="margin:0 0 14px; font-size:13.5px; line-height:1.55; background:var(--accent-light); border-radius:8px; padding:10px 12px;">
-      👋 ยินดีต้อนรับ! เลือก <strong>ชื่อ - สกุล</strong> ของคุณจากรายการ (ถ้าเป็นสมาชิกใหม่ให้เลือก "พิมพ์ชื่อใหม่")
+      <svg class="ic" aria-hidden="true"><use href="#i-sparkles"/></svg> ยินดีต้อนรับ! เลือก <strong>ชื่อ - สกุล</strong> ของคุณจากรายการ (ถ้าเป็นสมาชิกใหม่ให้เลือก "พิมพ์ชื่อใหม่")
       แล้ว<strong>ตั้งรหัส PIN ของตัวเอง</strong> — ระบบจะสร้างแท็บของคุณใน Google Sheet ให้อัตโนมัติ
       และใช้ PIN นี้ป้องกันข้อมูลของแต่ละคน เปิดใช้บนเครื่องอื่นก็แค่เลือกชื่อ + กรอก PIN เดิม ข้อมูลจะดึงกลับมาได้ครบ
     </p>
@@ -2241,7 +2390,7 @@ details.sync-instructions[open] summary {
       <label for="userSelect">เลือกชื่อของคุณ</label>
       <select class="form-input" id="userSelect">
         <option value="">— กำลังโหลดรายชื่อ… —</option>
-        <option value="__new__">➕ พิมพ์ชื่อใหม่ (สมาชิกที่ยังไม่มีในระบบ)</option>
+        <option value="__new__">+ พิมพ์ชื่อใหม่ (สมาชิกที่ยังไม่มีในระบบ)</option>
       </select>
     </div>
 
@@ -2280,7 +2429,7 @@ details.sync-instructions[open] summary {
 
     <div class="modal-actions">
       <button class="btn btn-subtle" id="cancelModalBtn">ยกเลิก</button>
-      <button class="btn btn-primary" id="saveProfileBtn">เข้าใช้งาน / บันทึก</button>
+      <button class="btn btn-primary" id="saveProfileBtn"><svg class="ic" aria-hidden="true"><use href="#i-user-check"/></svg><span id="saveProfileBtnText">เข้าใช้งาน / บันทึก</span></button>
     </div>
   </div>
 </div>
@@ -2289,8 +2438,8 @@ details.sync-instructions[open] summary {
 <div class="modal-backdrop" id="overwriteGuardModal" hidden>
   <div class="modal-content" role="dialog" aria-modal="true" aria-label="แจ้งเตือนข้อมูลในชีต">
     <div class="modal-header">
-      <h3 style="color:var(--warn-border);">⚠️ ในชีตมีข้อมูลเดิมอยู่แล้ว</h3>
-      <button class="date-nav-btn" id="closeOverwriteModalBtn" aria-label="ปิด">✕</button>
+      <h3 style="color:var(--warn-border); display:inline-flex; align-items:center; gap:8px;"><svg class="ic ic-lg" aria-hidden="true"><use href="#i-alert"/></svg>ในชีตมีข้อมูลเดิมอยู่แล้ว</h3>
+      <button class="date-nav-btn" id="closeOverwriteModalBtn" aria-label="ปิด"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
     <p id="overwriteGuardMsg" style="margin:0 0 16px; font-size:14px; line-height:1.55;">
       แท็บของคุณในชีตมีข้อมูลอยู่แล้ว แต่ข้อมูลบนเครื่องนี้ว่างเปล่า —
@@ -2298,10 +2447,10 @@ details.sync-instructions[open] summary {
     </p>
     <div style="display:flex; flex-direction:column; gap:8px;">
       <button class="btn btn-primary" id="overwritePullBtn" style="padding:10px 14px;">
-        ⬇️ ดึงข้อมูลจากชีตกลับมาใส่เครื่องนี้ (แนะนำ)
+        <svg class="ic" aria-hidden="true"><use href="#i-cloud-down"/></svg>ดึงข้อมูลจากชีตกลับมาใส่เครื่องนี้ (แนะนำ)
       </button>
       <button class="btn btn-subtle" id="overwriteForceBtn" style="color:var(--danger); border-color:var(--danger-light); padding:8px 12px; font-size:12.5px;">
-        ⚠️ ยืนยันล้างข้อมูลในชีตจริง (เขียนทับด้วยตารางว่าง)
+        <svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg><span id="overwriteForceBtnText">ยืนยันล้างข้อมูลในชีตจริง (เขียนทับด้วยตารางว่าง)</span>
       </button>
     </div>
   </div>
@@ -3276,27 +3425,29 @@ function updateDateStatusIndicators() {
       pill.title = "กำลังบันทึกข้อมูลของวันนี้";
       pillBtn.hidden = true;
     } else if (mode === "past") {
-      pillText.textContent = "⏳ กำลังบันทึกย้อนหลัง: " + viewDateShort();
+      pillText.innerHTML = iconHtml("clock") + " กำลังบันทึกย้อนหลัง: " + escapeHtml(viewDateShort());
       pill.title = "กำลังดู/บันทึกวันที่ผ่านมาแล้ว (วันนี้คือ " + todayShort + ")";
       pillBtn.hidden = false;
-      pillBtn.textContent = "📅 กลับมาวันนี้";
+      pillBtn.innerHTML = iconHtml("calendar") + " กลับมาวันนี้";
     } else {
-      pillText.textContent = "🔮 บันทึกล่วงหน้า: " + viewDateShort();
+      pillText.innerHTML = iconHtml("sparkles") + " บันทึกล่วงหน้า: " + escapeHtml(viewDateShort());
       pill.title = "กำลังดู/บันทึกวันที่ยังไม่ถึง (วันนี้คือ " + todayShort + ")";
       pillBtn.hidden = false;
-      pillBtn.textContent = "📅 กลับมาวันนี้";
+      pillBtn.innerHTML = iconHtml("calendar") + " กลับมาวันนี้";
     }
   }
 
   /* 2) ปุ่ม "กลับมาวันนี้" ในปฏิทิน */
   var calBtn = document.getElementById("calTodayBtn");
   var calBtnText = document.getElementById("calTodayBtnText");
+  var calBtnIco = document.getElementById("calTodayBtnIcon");
   if (calBtn && calBtnText) {
     calBtn.classList.toggle("is-on-today", isOnToday);
     calBtn.disabled = isOnToday;
+    if (calBtnIco) calBtnIco.innerHTML = iconHtml(isOnToday ? "check" : "calendar");
     calBtnText.textContent = isOnToday
-      ? "✓ กำลังบันทึกของวันนี้ (" + todayShort + ")"
-      : "📅 กลับมาวันนี้ (" + todayShort + ")";
+      ? "กำลังบันทึกของวันนี้ (" + todayShort + ")"
+      : "กลับมาวันนี้ (" + todayShort + ")";
     calBtn.title = isOnToday
       ? "อยู่ที่วันนี้แล้ว"
       : "กระโดดกลับมาเดือนปัจจุบันและเลือกวันนี้ (" + todayShort + ")";
@@ -3306,8 +3457,8 @@ function updateDateStatusIndicators() {
   var badge = document.getElementById("dayContextBadge");
   if (badge) {
     badge.setAttribute("data-mode", mode);
-    badge.textContent = isOnToday ? "วันนี้"
-      : (mode === "past" ? "⏳ บันทึกย้อนหลัง" : "🔮 บันทึกล่วงหน้า");
+    badge.innerHTML = isOnToday ? "วันนี้"
+      : (mode === "past" ? iconHtml("clock") + " บันทึกย้อนหลัง" : iconHtml("sparkles") + " บันทึกล่วงหน้า");
   }
 }
 
@@ -3435,21 +3586,22 @@ function init() {
 
   // Two-step inline confirm (no confirm() dialog — it never shows in this viewer)
   var clearBtn = document.getElementById("clearDayBtn");
+  var clearBtnText = document.getElementById("clearDayBtnText");
   var clearArmed = null;
   clearBtn.addEventListener("click", function () {
     if (clearArmed) {
       clearTimeout(clearArmed);
       clearArmed = null;
-      clearBtn.textContent = "ล้างข้อมูลวันนี้";
+      clearBtnText.textContent = "ล้างข้อมูลวันนี้";
       ACTIVITIES.forEach(function (a) { setDayValue(a.id, state.selectedDay, 0); });
       renderDailyActivities();
       renderDaysGrid();
       showToast("ล้างข้อมูลวันที่ " + state.selectedDay + " เรียบร้อย");
     } else {
-      clearBtn.textContent = "กดอีกครั้งเพื่อยืนยัน";
+      clearBtnText.textContent = "กดอีกครั้งเพื่อยืนยัน";
       clearArmed = setTimeout(function () {
         clearArmed = null;
-        clearBtn.textContent = "ล้างข้อมูลวันนี้";
+        clearBtnText.textContent = "ล้างข้อมูลวันนี้";
       }, 3000);
     }
   });
@@ -3496,7 +3648,7 @@ function init() {
 
 function updateDoctorDisplay() {
   var hasName = !!state.doctor.name;
-  document.getElementById("docNameDisplay").textContent = hasName ? state.doctor.name : "＋ ลงทะเบียนผู้ใช้ใหม่";
+  document.getElementById("docNameDisplay").textContent = hasName ? state.doctor.name : "+ ลงทะเบียนผู้ใช้ใหม่";
   document.getElementById("docChipHint").textContent = hasName ? "(แก้ไข)" : "(คลิกที่นี่)";
   // หัวหน้าเว็บ: แสดงเฉพาะกลุ่มงาน + โรงพยาบาล (คงที่ทุกคน) — ตำแหน่งของผู้บันทึกอยู่ในหัวชีต 3 บรรทัดแทน
   document.getElementById("docSubInfo").textContent =
@@ -3564,7 +3716,7 @@ function fillUserSelect(baseNow) {
     html += '<option value="' + escapeHtml(u.name) + '">' + escapeHtml(u.name) +
       (u.hasPin ? "" : " (ยังไม่มี PIN — ตั้งใหม่)") + "</option>";
   });
-  html += '<option value="__new__">➕ พิมพ์ชื่อใหม่ (สมาชิกที่ยังไม่มีในระบบ)</option>';
+  html += '<option value="__new__">+ พิมพ์ชื่อใหม่ (สมาชิกที่ยังไม่มีในระบบ)</option>';
   sel.innerHTML = html;
   if (baseNow && rosterEntry(baseNow)) sel.value = baseNow;
   else if (baseNow) sel.value = "__new__";
@@ -3625,9 +3777,9 @@ function openDoctorModal(mode) {
   document.getElementById("inputDocPin").value = "";
   document.getElementById("inputDocPinConfirm").value = "";
   var isReg = doctorModalMode === "register";
-  document.getElementById("profileModalTitle").textContent = isReg ? "👋 ลงทะเบียน + ตั้ง PIN" : "เข้าใช้งาน / แก้ไขข้อมูลผู้บันทึก";
+  document.getElementById("profileModalTitle").textContent = isReg ? "ลงทะเบียน + ตั้ง PIN" : "เข้าใช้งาน / แก้ไขข้อมูลผู้บันทึก";
   document.getElementById("regWelcomeNote").hidden = !isReg;
-  document.getElementById("saveProfileBtn").textContent = isReg ? "🚀 ตั้ง PIN และเริ่มใช้งาน" : "เข้าใช้งาน / บันทึก";
+  document.getElementById("saveProfileBtnText").textContent = isReg ? "ตั้ง PIN และเริ่มใช้งาน" : "เข้าใช้งาน / บันทึก";
   document.getElementById("cancelModalBtn").textContent = isReg ? "ยังไม่ต้องการ ใช้ในเครื่องก่อน" : "ยกเลิก";
   fillUserSelect(baseNow);
   updatePinUiForSelection();
@@ -3691,9 +3843,10 @@ function setupDoctorModal() {
     }
 
     var btn = document.getElementById("saveProfileBtn");
-    var btnText = btn.textContent;
+    var btnLabel = document.getElementById("saveProfileBtnText");
+    var btnText = btnLabel ? btnLabel.textContent : "";
     btn.disabled = true;
-    btn.textContent = "⏳ กำลังตรวจสอบ PIN…";
+    if (btnLabel) btnLabel.innerHTML = iconHtml("clock") + " กำลังตรวจสอบ PIN…";
 
     function finishLocal() {
       state.doctor.name = chosen;
@@ -3716,7 +3869,7 @@ function setupDoctorModal() {
       updateSheetLikeHeader();
       closeModal();
       btn.disabled = false;
-      btn.textContent = btnText;
+      if (btnLabel) btnLabel.textContent = btnText;
     }
 
     if (!gasUrlConfigured()) {
@@ -3743,11 +3896,11 @@ function setupDoctorModal() {
         })
         .catch(function (err) {
           btn.disabled = false;
-          btn.textContent = btnText;
+          if (btnLabel) btnLabel.textContent = btnText;
           if (isLegacyGasError(err.message)) {
             /* GAS ฝั่งชีตยังเป็นเวอร์ชันเก่า (ยังไม่รู้จัก set_pin) — ยอมรับไว้ก่อนเพื่อไม่ให้ทีมใช้ไม่ได้ */
             finishLocal();
-            showToast("⚠ ผู้ดูแลยังไม่ได้อัปเดต Apps Script — ระบบ PIN ยังไม่บังคับฝั่งเซิร์ฟเวอร์");
+            showToast("ผู้ดูแลยังไม่ได้อัปเดต Apps Script — ระบบ PIN ยังไม่บังคับฝั่งเซิร์ฟเวอร์");
             return;
           }
           if (err.code === "AUTH_FAIL") {
@@ -3789,16 +3942,16 @@ function setupDoctorModal() {
             pullFromSheet({ silent: true });
           }).catch(function (e2) {
             btn.disabled = false;
-            btn.textContent = btnText;
+            if (btnLabel) btnLabel.textContent = btnText;
             showToast("ตั้ง PIN ไม่สำเร็จ: " + e2.message);
           });
           return;
         }
         btn.disabled = false;
-        btn.textContent = btnText;
+        if (btnLabel) btnLabel.textContent = btnText;
         if (isLegacyGasError(err.message)) {
           finishLocal();
-          showToast("⚠ ผู้ดูแลยังไม่ได้อัปเดต Apps Script — เข้าใช้งานแบบไม่ตรวจ PIN");
+          showToast("ผู้ดูแลยังไม่ได้อัปเดต Apps Script — เข้าใช้งานแบบไม่ตรวจ PIN");
           return;
         }
         showToast("ยังเข้าใช้งานไม่สำเร็จ: " + err.message);
@@ -4554,7 +4707,7 @@ function updateTabNamePreview() {
   if (el) {
     el.textContent = full
       ? "แท็บที่จะเขียนในชีต: " + full + "  (เปลี่ยนตามเดือนที่กำลังดูอยู่)"
-      : "ยังไม่มีชื่อแท็บ — กรุณาคลิก '＋ ลงทะเบียนผู้ใช้ใหม่' มุมบนขวาเพื่อตั้งชื่อ";
+      : "ยังไม่มีชื่อแท็บ — กรุณาคลิก '+ ลงทะเบียนผู้ใช้ใหม่' มุมบนขวาเพื่อตั้งชื่อ";
   }
   var btn = document.getElementById("headerSaveSheetBtn");
   if (btn) {
@@ -4718,24 +4871,30 @@ function matrixSignature() {
     effectiveTabName() + "|" + JSON.stringify(generateMatrixArray());
 }
 
-function setSyncBadge(cls, text, title) {
+/* ป้ายสถานะซิงก์บนหัวเว็บ — text เป็น HTML ที่สร้างจาก iconHtml() + ข้อความ
+   spin:true = ให้ไอแกนหมุน (สถานะกำลังส่ง/รอส่ง) */
+function setSyncBadge(cls, html, title, spin) {
   var el = document.getElementById("autoSyncBadge");
   if (!el) return;
-  if (!state.gas.autoSync || !text) { el.hidden = true; return; }
+  if (!state.gas.autoSync || !html) { el.hidden = true; return; }
   el.hidden = false;
   el.className = "sync-badge" + (cls ? " " + cls : "");
-  el.textContent = text;
+  el.innerHTML = html;
+  if (spin) {
+    var s = el.querySelector(".ic");
+    if (s) s.classList.add("ic-spin");
+  }
   if (title !== undefined) el.title = title;
 }
 
 function syncBadgeIdle() {
   if (!state.gas.autoSync || !gasUrlConfigured()) { setSyncBadge("", ""); return; }
   if (state.lastSync) {
-    setSyncBadge("badge-ok", "✓ " + state.lastSync.localTime,
+    setSyncBadge("badge-ok", iconHtml("check") + " " + state.lastSync.localTime,
       "ซิงก์อัตโนมัติเปิดอยู่ — ส่งขึ้นชีตล่าสุด " +
       state.lastSync.localTime + " (" + fmtNum(state.lastSync.pts) + " แต้ม)");
   } else {
-    setSyncBadge("", "⟳ ออโต้", "ซิงก์อัตโนมัติเปิดอยู่ — จะส่งขึ้นชีตเองเมื่อคุณแก้ไขข้อมูล");
+    setSyncBadge("", iconHtml("refresh") + " ออโต้", "ซิงก์อัตโนมัติเปิดอยู่ — จะส่งขึ้นชีตเองเมื่อคุณแก้ไขข้อมูล");
   }
 }
 
@@ -4748,7 +4907,7 @@ function scheduleAutoSync() {
   if (!state.gas.autoSync) return;
   if (!gasUrlConfigured()) return; // ยังไม่ได้ตั้ง URL ไม่ต้องตั้งเวลารอส่ง
   syncBadgeIdle();
-  setSyncBadge("badge-pending", "⟳ รอส่ง…", "กำลังรอส่งขึ้นชีต…");
+  setSyncBadge("badge-pending", iconHtml("refresh") + " รอส่ง…", "กำลังรอส่งขึ้นชีต…", true);
   clearTimeout(autoSyncTimer);
   autoSyncTimer = setTimeout(function () {
     autoSyncTimer = null;
@@ -4768,12 +4927,12 @@ document.addEventListener("visibilitychange", function () {
 function scheduleAutoSyncRetry(reason) {
   if (!state.gas.autoSync) return;
   if (autoSyncRetries >= AUTO_SYNC_MAX_RETRIES) {
-    setSyncBadge("badge-err", "⚠ ส่งไม่ได้",
+    setSyncBadge("badge-err", iconHtml("alert") + " ส่งไม่ได้",
       "ส่งขึ้นชีตไม่สำเร็จ " + autoSyncRetries + " ครั้ง — ข้อมูลยังปลอดภัยในเครื่องนี้ " +
       "กดปุ่ม \"บันทึกเข้าชีต\" เพื่อลองใหม่เมื่ออินเทอร์เน็ตกลับมา");
     return;
   }
-  setSyncBadge("badge-err", "⚠ ลองใหม่…" + (autoSyncRetries + 1),
+  setSyncBadge("badge-err", iconHtml("alert") + " ลองใหม่…" + (autoSyncRetries + 1),
     "ส่งไม่สำเร็จ (" + reason + ") — จะลองใหม่อัตโนมัติใน 30 วินาที ข้อมูลปลอดภัยในเครื่อง");
   clearTimeout(autoSyncRetryTimer);
   autoSyncRetryTimer = setTimeout(function () {
@@ -4789,7 +4948,7 @@ function pushToSheet(opts) {
 
   if (!state.gas.url || !/^https:\/\/script\.google\.com\/macros\/s\/.+\/(exec|dev)$/.test(state.gas.url)) {
     if (o.auto) {
-      setSyncBadge("badge-err", "⚠ ยังไม่ตั้งค่า", "ยังไม่ได้กรอก URL ของ Google Apps Script — ตั้งค่าในแท็บ ส่งออกข้อมูล");
+      setSyncBadge("badge-err", iconHtml("alert") + " ยังไม่ตั้งค่า", "ยังไม่ได้กรอก URL ของ Google Apps Script — ตั้งค่าในแท็บ ส่งออกข้อมูล");
       return;
     }
     setGasStatus("ยังไม่มี URL — เปิดแท็บ \"ส่งออกข้อมูล\" เพื่อตั้งค่าการเชื่อมต่อ", "gas-status-err");
@@ -4800,7 +4959,7 @@ function pushToSheet(opts) {
   var tabName = effectiveTabName();
   if (!tabName) {
     if (o.auto) {
-      setSyncBadge("badge-err", "⚠ ยังไม่ลงทะเบียน", "ยังไม่มีชื่อผู้บันทึก — คลิกปุ่มชื่อผู้บันทึก (มุมบนขวา) เพื่อลงทะเบียน ระบบจะสร้างแท็บของคุณในชีตให้อัตโนมัติ");
+      setSyncBadge("badge-err", iconHtml("alert") + " ยังไม่ลงทะเบียน", "ยังไม่มีชื่อผู้บันทึก — คลิกปุ่มชื่อผู้บันทึก (มุมบนขวา) เพื่อลงทะเบียน ระบบจะสร้างแท็บของคุณในชีตให้อัตโนมัติ");
       return;
     }
     showToast("ยังไม่มีชื่อผู้บันทึก — คลิกปุ่มชื่อผู้บันทึก (มุมบนขวา) เพื่อลงทะเบียนก่อนบันทึก");
@@ -4812,7 +4971,7 @@ function pushToSheet(opts) {
     var pinNow = sessionPin();
     if (!pinNow) {
       if (o.auto) {
-        setSyncBadge("badge-err", "🔒 รอ PIN", "ยังไม่ได้กรอก PIN ในเบราว์เซอร์นี้ — คลิกชื่อผู้บันทึกมุมขวาบน แล้วกรอก PIN ข้อมูลในเครื่องยังปลอดภัย");
+        setSyncBadge("badge-err", iconHtml("lock") + " รอ PIN", "ยังไม่ได้กรอก PIN ในเบราว์เซอร์นี้ — คลิกชื่อผู้บันทึกมุมขวาบน แล้วกรอก PIN ข้อมูลในเครื่องยังปลอดภัย");
         return;
       }
       openDoctorModal("edit");
@@ -4833,8 +4992,8 @@ function pushToSheet(opts) {
   var label = document.getElementById("headerSaveBtnText");
   var oldLabel = label ? label.textContent : "";
   if (btn) btn.disabled = true;
-  if (label) label.textContent = "⏳ กำลังบันทึก…";
-  setSyncBadge("badge-pending", "⟳ กำลังส่ง…", "กำลังส่งข้อมูลขึ้น Google Sheet…");
+  if (label) label.textContent = "กำลังบันทึก…";
+  setSyncBadge("badge-pending", iconHtml("refresh") + " กำลังส่ง…", "กำลังส่งข้อมูลขึ้น Google Sheet…", true);
   setGasStatus((o.auto ? "ซิงก์อัตโนมัติ: กำลังส่งข้อมูล " : "กำลังส่งข้อมูล ") + ROW_COUNT_LABEL + " เข้าแท็บ \"" + tabName + "\"…");
 
   var payload = {
@@ -4891,7 +5050,7 @@ function pushToSheet(opts) {
         clearTimeout(autoSyncRetryTimer);
         autoSyncRetryTimer = null;
         if (o.auto) {
-          setSyncBadge("badge-err", "⛔ กันเขียนทับ", "ในชีตมีข้อมูลอยู่แล้ว แต่ข้อมูลเครื่องนี้ว่าง — ระบบไม่ลบทับอัตโนมัติ เปิดแท็บ \"ส่งออกข้อมูล\" เพื่อดึงข้อมูลกลับ");
+          setSyncBadge("badge-err", iconHtml("shield") + " กันเขียนทับ", "ในชีตมีข้อมูลอยู่แล้ว แต่ข้อมูลเครื่องนี้ว่าง — ระบบไม่ลบทับอัตโนมัติ เปิดแท็บ \"ส่งออกข้อมูล\" เพื่อดึงข้อมูลกลับ");
           openOverwriteGuardModal(err);
         } else {
           openOverwriteGuardModal(err);
@@ -4922,7 +5081,7 @@ function pushToSheet(opts) {
         autoSyncRetryTimer = null;
         clearSessionPin();
         if (o.auto) {
-          setSyncBadge("badge-err", "🔒 PIN ไม่ผ่าน", err.message + " — คลิกชื่อผู้บันทึกมุมขวาบนเพื่อกรอก PIN ใหม่ ข้อมูลยังปลอดภัยในเครื่อง");
+          setSyncBadge("badge-err", iconHtml("lock") + " PIN ไม่ผ่าน", err.message + " — คลิกชื่อผู้บันทึกมุมขวาบนเพื่อกรอก PIN ใหม่ ข้อมูลยังปลอดภัยในเครื่อง");
         } else {
           showToast(err.message + " — ข้อมูลยังปลอดภัยในเครื่อง");
         }
@@ -4936,7 +5095,7 @@ function pushToSheet(opts) {
         clearTimeout(autoSyncRetryTimer);
         autoSyncRetryTimer = null;
         if (o.auto) {
-          setSyncBadge("badge-err", "⚠ GAS เวอร์ชันเก่า", "Apps Script ฝั่งชีตยังเป็นเวอร์ชันเก่า (ไม่รู้จักคำสั่ง save) — ให้ผู้ดูแลวาง Code.gs ใหม่แล้ว Deploy");
+          setSyncBadge("badge-err", iconHtml("alert") + " GAS เวอร์ชันเก่า", "Apps Script ฝั่งชีตยังเป็นเวอร์ชันเก่า (ไม่รู้จักคำสั่ง save) — ให้ผู้ดูแลวาง Code.gs ใหม่แล้ว Deploy");
         } else {
           showToast("GAS ฝั่งชีตยังเป็นเวอร์ชันเก่า — ให้ผู้ดูแลวาง Code.gs ใหม่แล้ว Deploy (ดูวิธีในแท็บ ส่งออกข้อมูล)");
         }
@@ -4970,7 +5129,7 @@ function saveToSheet(triggerBtn) {
   pushToSheet({ auto: false, triggerBtn: triggerBtn });
 }
 
-/* ---------- ⬇️ ดึงข้อมูลจากชีตกลับเข้าเครื่อง (เครื่องใหม่/ล้างเครื่อง ใช้ PIN เดิมดึงข้อมูลตัวเอง) ---------- */
+/* ---------- ดึงข้อมูลจากชีตกลับเข้าเครื่อง (เครื่องใหม่/ล้างเครื่อง ใช้ PIN เดิมดึงข้อมูลตัวเอง) ---------- */
 
 /* นับจำนวนช่องที่มีค่าในเดือน/ปีที่ระบุ จากข้อมูลในเครื่อง (0 = เครื่องนี้ยังว่างสำหรับเดือนนั้น) */
 function localMonthCellCount(month, year) {
@@ -5037,7 +5196,7 @@ function pullFromSheet(opts) {
   var label = document.getElementById("headerPullBtnText");
   var oldLabel = label ? label.textContent : "";
   if (btn) btn.disabled = true;
-  if (label) label.textContent = "⏳ กำลังดึง…";
+  if (label) label.textContent = "กำลังดึง…";
 
   gasRequest(state.gas.url, {
     action: "load",
@@ -5119,20 +5278,21 @@ function setupOverwriteGuardModal() {
   });
   /* ยืนยัน 2 ขั้น (ไม่มี confirm() ในหน้าเว็บนี้) — กดอีกครั้งจึงจะล้างจริง */
   var forceBtn = document.getElementById("overwriteForceBtn");
+  var forceLabel = document.getElementById("overwriteForceBtnText");
   var forceArmed = null;
   forceBtn.addEventListener("click", function () {
     if (forceArmed) {
       clearTimeout(forceArmed);
       forceArmed = null;
-      forceBtn.textContent = "⚠️ ยืนยันล้างข้อมูลในชีตจริง (เขียนทับด้วยตารางว่าง)";
+      if (forceLabel) forceLabel.textContent = "ยืนยันล้างข้อมูลในชีตจริง (เขียนทับด้วยตารางว่าง)";
       closeOverwriteGuardModal();
       pushToSheet({ auto: false, force: true, skipPinCheck: false });
       return;
     }
-    forceBtn.textContent = "กดอีกครั้งเพื่อยืนยันล้างข้อมูลในชีต";
+    if (forceLabel) forceLabel.textContent = "กดอีกครั้งเพื่อยืนยันล้างข้อมูลในชีต";
     forceArmed = setTimeout(function () {
       forceArmed = null;
-      forceBtn.textContent = "⚠️ ยืนยันล้างข้อมูลในชีตจริง (เขียนทับด้วยตารางว่าง)";
+      if (forceLabel) forceLabel.textContent = "ยืนยันล้างข้อมูลในชีตจริง (เขียนทับด้วยตารางว่าง)";
     }, 5000);
   });
 }
@@ -5141,6 +5301,12 @@ function escapeHtml(s) {
   return String(s === undefined || s === null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+/* คืน HTML ของไอคอน SVG จาก sprite ด้านบน <body> — ใช้ใน innerHTML/textContent ที่ต้องมีไอคอนนำหน้า
+   ตัวอย่าง: iconHtml("calendar") → '<svg class="ic" aria-hidden="true"><use href="#i-calendar"/></svg>' */
+function iconHtml(name) {
+  return '<svg class="ic" aria-hidden="true"><use href="#i-' + name + '"/></svg>';
 }
 
 var ROW_COUNT_LABEL = "20 กิจกรรม × 31 วัน";
